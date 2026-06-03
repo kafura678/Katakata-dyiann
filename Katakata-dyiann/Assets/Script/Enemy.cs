@@ -37,7 +37,11 @@ public class Enemy : MonoBehaviour
 
     private void Die()
     {
-        GameManager.Instance.AddFlowGauge();
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddFlowGauge();
+        }
+
         Destroy(gameObject);
     }
 }

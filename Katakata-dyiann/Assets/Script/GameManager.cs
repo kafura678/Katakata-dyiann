@@ -5,13 +5,13 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Gauge Settings")]
+    [Header("Shot Gauge")]
     public float shotGauge = 0f;
     public float maxShotGauge = 100f;
     public float gaugeGainPerKey = 5f;
     public float gaugeDrainPerSecond = 15f;
 
-    [Header("Flow Settings")]
+    [Header("Flow Gauge")]
     public float flowGauge = 0f;
     public float maxFlowGauge = 100f;
     public float flowGainPerEnemy = 20f;
@@ -33,36 +33,34 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        UpdateShootingGauge();
+        UpdateShotGauge();
         UpdateFlowMode();
         UpdateUI();
     }
 
-    private void UpdateShootingGauge()
+    private void UpdateShotGauge()
     {
-        if (isShooting)
-        {
-            shotGauge -= gaugeDrainPerSecond * Time.deltaTime;
+        if (!isShooting) return;
 
-            if (shotGauge <= 0f)
-            {
-                shotGauge = 0f;
-                isShooting = false;
-            }
+        shotGauge -= gaugeDrainPerSecond * Time.deltaTime;
+
+        if (shotGauge <= 0f)
+        {
+            shotGauge = 0f;
+            isShooting = false;
         }
     }
 
     private void UpdateFlowMode()
     {
-        if (isFlowMode)
-        {
-            flowGauge -= flowDrainPerSecond * Time.deltaTime;
+        if (!isFlowMode) return;
 
-            if (flowGauge <= 0f)
-            {
-                flowGauge = 0f;
-                isFlowMode = false;
-            }
+        flowGauge -= flowDrainPerSecond * Time.deltaTime;
+
+        if (flowGauge <= 0f)
+        {
+            flowGauge = 0f;
+            EndFlowMode();
         }
     }
 
@@ -76,10 +74,9 @@ public class GameManager : MonoBehaviour
 
     public void StartShooting()
     {
-        if (shotGauge > 0f)
-        {
-            isShooting = true;
-        }
+        if (shotGauge <= 0f) return;
+
+        isShooting = true;
     }
 
     public void AddFlowGauge()
@@ -92,28 +89,47 @@ public class GameManager : MonoBehaviour
 
     public void StartFlowMode()
     {
-        if (flowGauge >= maxFlowGauge)
-        {
-            isFlowMode = true;
-        }
+        if (isFlowMode) return;
+        if (flowGauge < maxFlowGauge) return;
+
+        isFlowMode = true;
+
+        Debug.Log("Flow Mode Start");
+    }
+
+    private void EndFlowMode()
+    {
+        isFlowMode = false;
+
+        Debug.Log("Flow Mode End");
     }
 
     private void UpdateUI()
     {
         if (textShotGauge != null)
+        {
             textShotGauge.text = "射撃ゲージ：" + shotGauge.ToString("F0") + "%";
+        }
 
         if (textFlowGauge != null)
+        {
             textFlowGauge.text = "フローゲージ：" + flowGauge.ToString("F0") + "%";
+        }
 
         if (textStatus != null)
         {
             if (isFlowMode)
+            {
                 textStatus.text = "フローモード";
+            }
             else if (isShooting)
+            {
                 textStatus.text = "射撃中";
+            }
             else
+            {
                 textStatus.text = "チャージ中";
+            }
         }
     }
 }
