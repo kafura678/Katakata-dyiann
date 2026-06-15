@@ -1313,7 +1313,7 @@ GameObject:
   m_Component:
   - component: {fileID: 649670306}
   m_Layer: 0
-  m_Name: AimPoints
+  m_Name: MovePoints
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2513,6 +2513,7 @@ GameObject:
   - component: {fileID: 1813944308}
   - component: {fileID: 1813944307}
   - component: {fileID: 1813944309}
+  - component: {fileID: 1813944310}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2602,7 +2603,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1813944306}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 47dfc6940cdd646adb101638f4755a3c, type: 3}
   m_Name: 
@@ -2669,6 +2670,29 @@ MonoBehaviour:
     aimPoint: {fileID: 2078024877}
   - key: 110
     aimPoint: {fileID: 2078024877}
+--- !u!114 &1813944310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1813944306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49769b1c5cdbf4eb0b94a94b0e4d6bda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerKeyMover
+  keyMovePoints:
+  - key: 113
+    movePoint: {fileID: 0}
+  slashLine: {fileID: 0}
+  slashVisibleTime: 0.08
+  baseDamage: 1
+  distanceDamageRate: 0.5
+  slashWidth: 0.4
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &1839126691
 GameObject:
   m_ObjectHideFlags: 0
