@@ -1113,7 +1113,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!120 &533974692
 LineRenderer:
   serializedVersion: 3
@@ -2813,14 +2813,23 @@ MonoBehaviour:
     movePoint: {fileID: 779648912}
   - key: 99
     movePoint: {fileID: 2078024877}
-  slashLine: {fileID: 533974692}
-  slashVisibleTime: 0.08
-  baseDamage: 1
-  distanceDamageRate: 0.5
-  slashWidth: 0.4
+  moveDuration: 0.05
+  isMoving: 0
   enemyLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
+  slashWidth: 0.4
+  baseDamage: 1
+  distanceDamageRate: 0.5
+  slashLine: {fileID: 533974692}
+  slashLineTime: 0.08
+  afterImagePrefab: {fileID: 5078891719955181059, guid: e684418b1d3de473cb3c0edc2985d913, type: 3}
+  afterImageCount: 4
+  isFlowMode: 0
+  flowGauge: 0
+  maxFlowGauge: 100
+  flowGainPerSlash: 10
+  flowDrainPerSecond: 20
 --- !u!50 &1813944311
 Rigidbody2D:
   serializedVersion: 5

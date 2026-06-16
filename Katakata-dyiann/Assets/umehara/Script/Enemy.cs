@@ -26,6 +26,24 @@ public class Enemy : MonoBehaviour
     }
 
     public void TakeDamage(float damage)
+
+    {
+
+        hp -= damage;
+
+        Debug.Log(gameObject.name + " に " + damage + " ダメージ");
+
+        if (hp <= 0f)
+
+        {
+
+            Destroy(gameObject);
+
+        }
+
+    }
+
+    /*public void TakeDamage(float damage)
     {
         hp -= damage;
 
@@ -43,5 +61,5 @@ public class Enemy : MonoBehaviour
         }
 
         Destroy(gameObject);
-    }
+    }*/
 }
