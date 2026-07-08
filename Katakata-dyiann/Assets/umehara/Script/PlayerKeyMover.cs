@@ -18,6 +18,13 @@ public class PlayerKeyMover : MonoBehaviour
     public float moveDuration = 0.05f;
     public bool isMoving = false;
 
+    [Header("移動先の敵チェック")]
+    public float movePointCheckRadius = 0.45f;
+
+    [Header("プレイヤーHP")]
+    public int playerHP = 5;
+    public int damageOnBlockedMove = 1;
+
     [Header("斬撃設定")]
     public LayerMask enemyLayer;
     public float slashWidth = 0.4f;
@@ -66,7 +73,28 @@ public class PlayerKeyMover : MonoBehaviour
                 continue;
             }
 
-            StartCoroutine(MoveAndSlash(data.movePoint.position));
+            Vector3 targetPosition = data.movePoint.position;
+
+            // 移動先に敵がいるか確認
+            if (IsEnemyAtPosition(targetPosition))
+            {
+                TakeDamage(damageOnBlockedMove);
+
+                Transform safePoint = FindNearestSafeMovePoint(targetPosition);
+
+                if (safePoint != null)
+                {
+                    Debug.Log("移動先に敵がいたため、近くの安全なキー位置へ移動します");
+                    targetPosition = safePoint.position;
+                }
+                else
+                {
+                    Debug.LogWarning("安全な移動先がありません");
+                    return;
+                }
+            }
+
+            StartCoroutine(MoveAndSlash(targetPosition));
             break;
         }
     }
@@ -104,6 +132,43 @@ public class PlayerKeyMover : MonoBehaviour
 
         transform.position = endPosition;
         isMoving = false;
+    }
+
+    private bool IsEnemyAtPosition(Vector3 position)
+    {
+        Collider2D hit = Physics2D.OverlapCircle(
+            position,
+            movePointCheckRadius,
+            enemyLayer
+        );
+
+        return hit != null;
+    }
+
+    private Transform FindNearestSafeMovePoint(Vector3 blockedPosition)
+    {
+        Transform nearestPoint = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (KeyMovePoint data in keyMovePoints)
+        {
+            if (data.movePoint == null) continue;
+
+            Vector3 pointPosition = data.movePoint.position;
+
+            // 敵がいる場所は候補から外す
+            if (IsEnemyAtPosition(pointPosition)) continue;
+
+            float distance = Vector2.Distance(blockedPosition, pointPosition);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestPoint = data.movePoint;
+            }
+        }
+
+        return nearestPoint;
     }
 
     private void DamageEnemiesOnLine(Vector3 start, Vector3 end, float damage)
@@ -161,6 +226,23 @@ public class PlayerKeyMover : MonoBehaviour
         }
     }
 
+    private void TakeDamage(int damage)
+    {
+        playerHP -= damage;
+
+        if (playerHP < 0)
+        {
+            playerHP = 0;
+        }
+
+        Debug.Log("プレイヤーがダメージを受けました HP: " + playerHP);
+
+        if (playerHP <= 0)
+        {
+            Debug.Log("ゲームオーバー");
+        }
+    }
+
     private void AddFlowGauge(float amount)
     {
         if (isFlowMode) return;
@@ -189,6 +271,20 @@ public class PlayerKeyMover : MonoBehaviour
             flowGauge = 0f;
             isFlowMode = false;
             Debug.Log("フローモード終了");
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (keyMovePoints == null) return;
+
+        Gizmos.color = Color.red;
+
+        foreach (KeyMovePoint data in keyMovePoints)
+        {
+            if (data.movePoint == null) continue;
+
+            Gizmos.DrawWireSphere(data.movePoint.position, movePointCheckRadius);
         }
     }
 }
