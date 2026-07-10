@@ -39,16 +39,10 @@ public class PlayerKeyMover : MonoBehaviour
     public GameObject afterImagePrefab;
     public int afterImageCount = 4;
 
-    [Header("フローモード")]
-    public bool isFlowMode = false;
-    public float flowGauge = 0f;
-    public float maxFlowGauge = 100f;
-    public float flowGainPerSlash = 10f;
-    public float flowDrainPerSecond = 20f;
+
 
     private void Update()
     {
-        UpdateFlowMode();
         HandleInput();
     }
 
@@ -59,7 +53,6 @@ public class PlayerKeyMover : MonoBehaviour
         // Shift + A でフローモード発動
         if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.A))
         {
-            StartFlowMode();
             return;
         }
 
@@ -108,11 +101,6 @@ public class PlayerKeyMover : MonoBehaviour
 
         float distance = Vector2.Distance(startPosition, endPosition);
         float damage = baseDamage + distance * distanceDamageRate;
-
-        if (isFlowMode)
-        {
-            damage *= 1.5f;
-        }
 
         DamageEnemiesOnLine(startPosition, endPosition, damage);
         ShowAfterImages(startPosition, endPosition);
@@ -193,7 +181,48 @@ public class PlayerKeyMover : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
-                AddFlowGauge(flowGainPerSlash);
+
+                if (FlowManager.Instance != null)
+                {
+                    if (FlowManager.Instance.isFlowMode)
+                        FlowManager.Instance.CountFlowAttack();
+                    else
+                        FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
+                }
+
+                continue;
+            }
+
+            BossController boss = hit.collider.GetComponent<BossController>();
+
+            if (boss != null)
+            {
+                boss.TakeDamage(damage);
+
+                if (FlowManager.Instance != null)
+                {
+                    if (FlowManager.Instance.isFlowMode)
+                        FlowManager.Instance.CountFlowAttack();
+                    else
+                        FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
+                }
+
+                continue;
+            }
+
+            BossMinion minion = hit.collider.GetComponent<BossMinion>();
+
+            if (minion != null)
+            {
+                minion.TakeDamage(damage);
+
+                if (FlowManager.Instance != null)
+                {
+                    if (FlowManager.Instance.isFlowMode)
+                        FlowManager.Instance.CountFlowAttack();
+                    else
+                        FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
+                }
             }
         }
     }
@@ -240,37 +269,6 @@ public class PlayerKeyMover : MonoBehaviour
         if (playerHP <= 0)
         {
             Debug.Log("ゲームオーバー");
-        }
-    }
-
-    private void AddFlowGauge(float amount)
-    {
-        if (isFlowMode) return;
-
-        flowGauge += amount;
-        flowGauge = Mathf.Clamp(flowGauge, 0f, maxFlowGauge);
-    }
-
-    private void StartFlowMode()
-    {
-        if (isFlowMode) return;
-        if (flowGauge < maxFlowGauge) return;
-
-        isFlowMode = true;
-        Debug.Log("フローモード開始");
-    }
-
-    private void UpdateFlowMode()
-    {
-        if (!isFlowMode) return;
-
-        flowGauge -= flowDrainPerSecond * Time.deltaTime;
-
-        if (flowGauge <= 0f)
-        {
-            flowGauge = 0f;
-            isFlowMode = false;
-            Debug.Log("フローモード終了");
         }
     }
 

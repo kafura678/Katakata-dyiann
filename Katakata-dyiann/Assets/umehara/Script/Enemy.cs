@@ -22,7 +22,14 @@ public class Enemy : MonoBehaviour
         if (target == null) return;
 
         Vector3 direction = target.position - transform.position;
-        transform.position += direction.normalized * moveSpeed * Time.deltaTime;
+        float speedRate = 1f;
+
+        if (FlowManager.Instance != null)
+        {
+            speedRate = FlowManager.Instance.GetEnemySpeedRate();
+        }
+
+        transform.position += direction.normalized * moveSpeed * speedRate * Time.deltaTime;
     }
 
     public void TakeDamage(float damage)
