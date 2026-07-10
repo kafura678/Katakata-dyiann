@@ -1204,7 +1204,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!120 &533974692
 LineRenderer:
   serializedVersion: 3
@@ -2943,6 +2943,9 @@ MonoBehaviour:
     movePoint: {fileID: 2078024877}
   moveDuration: 0.05
   isMoving: 0
+  movePointCheckRadius: 0.45
+  playerHP: 5
+  damageOnBlockedMove: 1
   enemyLayer:
     serializedVersion: 2
     m_Bits: 64
