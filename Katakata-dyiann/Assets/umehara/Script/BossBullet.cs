@@ -30,6 +30,11 @@ public class BossBullet : MonoBehaviour
 
         if (player != null)
         {
+            if (ComboManager.Instance != null)
+            {
+                ComboManager.Instance.ResetCombo();
+            }
+
             Debug.Log("Player Hit by Boss Bullet");
 
             Destroy(gameObject);

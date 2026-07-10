@@ -176,20 +176,15 @@ public class PlayerKeyMover : MonoBehaviour
 
         foreach (RaycastHit2D hit in hits)
         {
+            float finalDamage = GetComboDamage(damage);
+
             Enemy enemy = hit.collider.GetComponent<Enemy>();
 
             if (enemy != null)
             {
-                enemy.TakeDamage(damage);
-
-                if (FlowManager.Instance != null)
-                {
-                    if (FlowManager.Instance.isFlowMode)
-                        FlowManager.Instance.CountFlowAttack();
-                    else
-                        FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
-                }
-
+                enemy.TakeDamage(finalDamage);
+                AddCombo();
+                AddFlowByHit();
                 continue;
             }
 
@@ -197,16 +192,9 @@ public class PlayerKeyMover : MonoBehaviour
 
             if (boss != null)
             {
-                boss.TakeDamage(damage);
-
-                if (FlowManager.Instance != null)
-                {
-                    if (FlowManager.Instance.isFlowMode)
-                        FlowManager.Instance.CountFlowAttack();
-                    else
-                        FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
-                }
-
+                boss.TakeDamage(finalDamage);
+                AddCombo();
+                AddFlowByHit();
                 continue;
             }
 
@@ -214,15 +202,9 @@ public class PlayerKeyMover : MonoBehaviour
 
             if (minion != null)
             {
-                minion.TakeDamage(damage);
-
-                if (FlowManager.Instance != null)
-                {
-                    if (FlowManager.Instance.isFlowMode)
-                        FlowManager.Instance.CountFlowAttack();
-                    else
-                        FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
-                }
+                minion.TakeDamage(finalDamage);
+                AddCombo();
+                AddFlowByHit();
             }
         }
     }
@@ -255,7 +237,39 @@ public class PlayerKeyMover : MonoBehaviour
         }
     }
 
-    private void TakeDamage(int damage)
+    private float GetComboDamage(float baseDamage)
+    {
+        if (ComboManager.Instance == null)
+        {
+            return baseDamage;
+        }
+
+        return baseDamage * ComboManager.Instance.GetDamageMultiplier();
+    }
+
+    private void AddCombo()
+    {
+        if (ComboManager.Instance != null)
+        {
+            ComboManager.Instance.AddCombo();
+        }
+    }
+
+    private void AddFlowByHit()
+    {
+        if (FlowManager.Instance == null) return;
+
+        if (FlowManager.Instance.isFlowMode)
+        {
+            FlowManager.Instance.CountFlowAttack();
+        }
+        else
+        {
+            FlowManager.Instance.AddFlowGauge(FlowManager.Instance.flowGainPerHit);
+        }
+    }
+
+    public void TakeDamage(int damage)
     {
         playerHP -= damage;
 
@@ -264,11 +278,19 @@ public class PlayerKeyMover : MonoBehaviour
             playerHP = 0;
         }
 
-        Debug.Log("プレイヤーがダメージを受けました HP: " + playerHP);
+        if (ComboManager.Instance != null)
+        {
+            ComboManager.Instance.ResetCombo();
+        }
+
+        Debug.Log("プレイヤーHP: " + playerHP);
 
         if (playerHP <= 0)
         {
-            Debug.Log("ゲームオーバー");
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.GameOver();
+            }
         }
     }
 

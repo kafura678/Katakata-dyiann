@@ -501,6 +501,14 @@ public class BossController : MonoBehaviour
     private void Die()
     {
         Debug.Log("Boss Defeated");
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddScore(1000);
+            GameManager.Instance.AddDefeatedEnemyCount();
+            GameManager.Instance.GameClear();
+        }
+
         Destroy(gameObject);
     }
 }

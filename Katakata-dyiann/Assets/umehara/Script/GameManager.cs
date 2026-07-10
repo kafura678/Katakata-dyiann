@@ -1,135 +1,81 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("Shot Gauge")]
-    public float shotGauge = 0f;
-    public float maxShotGauge = 100f;
-    public float gaugeGainPerKey = 5f;
-    public float gaugeDrainPerSecond = 15f;
+    [Header("Game State")]
+    public bool isGameOver = false;
+    public bool isClear = false;
 
-    [Header("Flow Gauge")]
-    public float flowGauge = 0f;
-    public float maxFlowGauge = 100f;
-    public float flowGainPerEnemy = 20f;
-    public float flowDrainPerSecond = 20f;
+    [Header("Timer")]
+    public float gameTime = 0f;
 
-    [Header("State")]
-    public bool isShooting = false;
-    public bool isFlowMode = false;
+    [Header("Score")]
+    public int score = 0;
+    public int defeatedEnemyCount = 0;
 
-    [Header("UI")]
-    public Text textShotGauge;
-    public Text textFlowGauge;
-    public Text textStatus;
+    [Header("Result")]
+    public float resultDelay = 1.5f;
 
     private void Awake()
     {
         Instance = this;
+        ResultData.Reset();
     }
 
     private void Update()
     {
-        UpdateShotGauge();
-        UpdateFlowMode();
-        UpdateUI();
+        if (isGameOver) return;
+
+        gameTime += Time.deltaTime;
     }
 
-    private void UpdateShotGauge()
+    public void AddScore(int amount)
     {
-        if (!isShooting) return;
-
-        shotGauge -= gaugeDrainPerSecond * Time.deltaTime;
-
-        if (shotGauge <= 0f)
-        {
-            shotGauge = 0f;
-            isShooting = false;
-        }
+        score += amount;
     }
 
-    private void UpdateFlowMode()
+    public void AddDefeatedEnemyCount()
     {
-        if (!isFlowMode) return;
-
-        flowGauge -= flowDrainPerSecond * Time.deltaTime;
-
-        if (flowGauge <= 0f)
-        {
-            flowGauge = 0f;
-            EndFlowMode();
-        }
+        defeatedEnemyCount++;
     }
 
-    public void AddShotGauge()
+    public void GameClear()
     {
-        if (isShooting) return;
+        if (isGameOver) return;
 
-        shotGauge += gaugeGainPerKey;
-        shotGauge = Mathf.Clamp(shotGauge, 0f, maxShotGauge);
+        isGameOver = true;
+        isClear = true;
+
+        SaveResultData();
+
+        Invoke(nameof(LoadResultScene), resultDelay);
     }
 
-    public void StartShooting()
+    public void GameOver()
     {
-        if (shotGauge <= 0f) return;
+        if (isGameOver) return;
 
-        isShooting = true;
+        isGameOver = true;
+        isClear = false;
+
+        SaveResultData();
+
+        Invoke(nameof(LoadResultScene), resultDelay);
     }
 
-    public void AddFlowGauge()
+    private void SaveResultData()
     {
-        if (isFlowMode) return;
-
-        flowGauge += flowGainPerEnemy;
-        flowGauge = Mathf.Clamp(flowGauge, 0f, maxFlowGauge);
+        ResultData.isClear = isClear;
+        ResultData.clearTime = gameTime;
+        ResultData.score = score;
+        ResultData.defeatedEnemyCount = defeatedEnemyCount;
     }
 
-    public void StartFlowMode()
+    private void LoadResultScene()
     {
-        if (isFlowMode) return;
-        if (flowGauge < maxFlowGauge) return;
-
-        isFlowMode = true;
-
-        Debug.Log("Flow Mode Start");
-    }
-
-    private void EndFlowMode()
-    {
-        isFlowMode = false;
-
-        Debug.Log("Flow Mode End");
-    }
-
-    private void UpdateUI()
-    {
-        if (textShotGauge != null)
-        {
-            textShotGauge.text = "射撃ゲージ：" + shotGauge.ToString("F0") + "%";
-        }
-
-        if (textFlowGauge != null)
-        {
-            textFlowGauge.text = "フローゲージ：" + flowGauge.ToString("F0") + "%";
-        }
-
-        if (textStatus != null)
-        {
-            if (isFlowMode)
-            {
-                textStatus.text = "フローモード";
-            }
-            else if (isShooting)
-            {
-                textStatus.text = "射撃中";
-            }
-            else
-            {
-                textStatus.text = "チャージ中";
-            }
-        }
+        SceneManager.LoadScene("ResultScene");
     }
 }
