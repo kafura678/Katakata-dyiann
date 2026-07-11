@@ -3,34 +3,6 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float hp = 3f;
-    public float moveSpeed = 2f;
-
-    private Transform target;
-
-    private void Start()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-
-        if (player != null)
-        {
-            target = player.transform;
-        }
-    }
-
-    private void Update()
-    {
-        if (target == null) return;
-
-        Vector3 direction = target.position - transform.position;
-        float speedRate = 1f;
-
-        if (FlowManager.Instance != null)
-        {
-            speedRate = FlowManager.Instance.GetEnemySpeedRate();
-        }
-
-        transform.position += direction.normalized * moveSpeed * speedRate * Time.deltaTime;
-    }
 
     public void TakeDamage(float damage)
 
@@ -43,11 +15,23 @@ public class Enemy : MonoBehaviour
         if (hp <= 0f)
 
         {
-
-            Destroy(gameObject);
-
+            Die();
         }
 
+    }
+
+    private void Die()
+    {
+        Debug.Log("Boss Defeated");
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AddScore(1000);
+            GameManager.Instance.AddDefeatedEnemyCount();
+            GameManager.Instance.GameClear();
+        }
+
+        Destroy(gameObject);
     }
 
     /*public void TakeDamage(float damage)
