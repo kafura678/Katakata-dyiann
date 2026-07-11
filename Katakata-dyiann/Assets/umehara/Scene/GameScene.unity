@@ -763,7 +763,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c40120af2ffa437a946a591d51cffe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  hp: 3
+  hp: 500
 --- !u!61 &285227295
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3525,10 +3525,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ead6b64d55b54d8ab84c2e72ec3c5c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  enemyPrefab: {fileID: 311839347680003775, guid: 4e970d4397757404785c2b5ee6ecd932, type: 3}
-  spawnInterval: 1.5
-  spawnRadius: 8
-  timer: 0
 --- !u!4 &1861377755
 Transform:
   m_ObjectHideFlags: 0
