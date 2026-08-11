@@ -39,6 +39,10 @@ public class PlayerKeyMover : MonoBehaviour
     public GameObject afterImagePrefab;
     public int afterImageCount = 4;
 
+    [Header("移動SE")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip moveSE;
+    [SerializeField, Range(0f, 1f)] private float moveSEVolume = 1f;
 
 
     private void Update()
@@ -95,6 +99,8 @@ public class PlayerKeyMover : MonoBehaviour
     private IEnumerator MoveAndSlash(Vector3 targetPosition)
     {
         isMoving = true;
+
+        PlayMoveSE();
 
         Vector3 startPosition = transform.position;
         Vector3 endPosition = targetPosition;
@@ -306,5 +312,15 @@ public class PlayerKeyMover : MonoBehaviour
 
             Gizmos.DrawWireSphere(data.movePoint.position, movePointCheckRadius);
         }
+    }
+
+    private void PlayMoveSE()
+    {
+        if (audioSource == null || moveSE == null)
+        {
+            return;
+        }
+
+        audioSource.PlayOneShot(moveSE, moveSEVolume);
     }
 }

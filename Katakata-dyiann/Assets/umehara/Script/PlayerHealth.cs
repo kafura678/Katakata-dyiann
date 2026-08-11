@@ -11,6 +11,11 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float invincibleTime = 1f;
     [SerializeField] private SpriteRenderer playerRenderer;
 
+    [Header("被弾SE")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip damageSE;
+    [SerializeField, Range(0f, 1f)] private float damageSEVolume = 1f;
+
     private bool isInvincible;
     private bool isDead;
 
@@ -18,9 +23,12 @@ public class PlayerHealth : MonoBehaviour
     public int CurrentHearts => currentHearts;
     public bool IsDead => isDead;
 
+    private PlayerKeyMover playerKeyMover;
+
     private void Awake()
     {
         currentHearts = maxHearts;
+        playerKeyMover = GetComponent<PlayerKeyMover>();
     }
 
     private void Start()
@@ -30,6 +38,12 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        // 移動中は被弾しない
+        if (playerKeyMover != null && playerKeyMover.isMoving)
+        {
+            return;
+        }
+
         if (isDead || isInvincible)
         {
             return;
@@ -37,6 +51,16 @@ public class PlayerHealth : MonoBehaviour
 
         currentHearts -= damage;
         currentHearts = Mathf.Clamp(currentHearts, 0, maxHearts);
+
+        if (audioSource != null && damageSE != null)
+        {
+            audioSource.PlayOneShot(damageSE, damageSEVolume);
+        }
+
+        if (CameraShake.Instance != null)
+        {
+            CameraShake.Instance.Shake();
+        }
 
         if (ComboManager.Instance != null)
         {
