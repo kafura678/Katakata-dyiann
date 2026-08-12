@@ -89,6 +89,23 @@ public class PlayerHealth : MonoBehaviour
         Destroy(collision.gameObject);
     }
 
+    public void Heal(int amount)
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+        currentHearts += amount;
+        currentHearts = Mathf.Clamp(
+            currentHearts,
+            0,
+            maxHearts
+        );
+
+        UpdateHeartUI();
+    }
+
     private void Die()
     {
         isDead = true;
