@@ -150,12 +150,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlowManager
   flowGauge: 0
   maxFlowGauge: 100
-  flowGainPerHit: 10
+  flowGainPerHit: 5
   isFlowMode: 0
   flowDuration: 5
   requiredAttackCount: 8
+  isUltimateReady: 0
+  isUltimatePlaying: 0
   enemySlowRate: 0.3
-  ultimateDamage: 999
   flowGaugeSlider: {fileID: 1036713722}
   flowText: {fileID: 1438412369}
 --- !u!4 &8877812
@@ -865,7 +866,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c40120af2ffa437a946a591d51cffe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  hp: 500
+  hp: 1500
 --- !u!61 &285227295
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2826,6 +2827,7 @@ RectTransform:
   - {fileID: 18748020}
   - {fileID: 415780865}
   - {fileID: 1726326506}
+  - {fileID: 2012059065}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3139,7 +3141,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -600, y: 350}
+  m_AnchoredPosition: {x: -191.02, y: 350}
   m_SizeDelta: {x: 500, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1557043622
@@ -3956,7 +3958,7 @@ SpriteRenderer:
   m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: -6470460504253458178, guid: 7a0c14e7622594b7bab0e03c9ee3e221, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0.65196705, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -4075,12 +4077,16 @@ MonoBehaviour:
   afterImagePrefab: {fileID: 5078891719955181059, guid: e684418b1d3de473cb3c0edc2985d913, type: 3}
   afterImageCount: 4
   afterImageLifeTime: 0.2
+  keepAfterImageInFlow: 1
   audioSource: {fileID: 1813944314}
   moveSE: {fileID: 8300000, guid: 62e8c07cbc845413aa6b40331d84fc72, type: 3}
   moveSEVolume: 0.3
   wordCommands:
   - word: HEAL
     commandType: 0
+  ultimateMoveDuration: 0.03
+  ultimateDamageMultiplier: 2
+  ultimateStepWait: 0.02
 --- !u!50 &1813944311
 Rigidbody2D:
   serializedVersion: 5
@@ -4351,6 +4357,81 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1844583082
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1844583083}
+  - component: {fileID: 1844583085}
+  - component: {fileID: 1844583084}
+  m_Layer: 5
+  m_Name: GaugeImage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1844583083
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1844583082}
+  m_LocalRotation: {x: 0, y: 0, z: -0.014922054, w: 0.99988866}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2012059065}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -1.71}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: -655, y: 376.5}
+  m_SizeDelta: {x: 500, y: 447}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1844583084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1844583082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: a7adce88462e7491eaae9e9ca8570020, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1844583085
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1844583082}
+  m_CullTransparentMesh: 1
 --- !u!1 &1856321363
 GameObject:
   m_ObjectHideFlags: 0
@@ -5048,6 +5129,72 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2010476459}
   m_CullTransparentMesh: 1
+--- !u!1 &2012059064
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2012059065}
+  - component: {fileID: 2012059066}
+  m_Layer: 5
+  m_Name: FlowGauge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2012059065
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012059064}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1844583083}
+  m_Father: {fileID: 1257647757}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2012059066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2012059064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 083537d5de3834486b3d511f57570c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlowGaugeUI
+  gaugeImage: {fileID: 1844583084}
+  gaugeSprites:
+  - {fileID: 21300000, guid: a7adce88462e7491eaae9e9ca8570020, type: 3}
+  - {fileID: 21300000, guid: 26723f5c6793e4abf9814ca965788670, type: 3}
+  - {fileID: 21300000, guid: e358b4da72b1641f8b6d9409f17ad398, type: 3}
+  - {fileID: 21300000, guid: e52f19402b9194cc7984eeeefe29bfc3, type: 3}
+  - {fileID: 21300000, guid: 414fe580d28a6435bb69df24c4b1b2cf, type: 3}
+  - {fileID: 21300000, guid: 43e027ae6deeb466a9a3eb7024a7df82, type: 3}
+  - {fileID: 21300000, guid: 08f8f736b74a1455fb61039aab7c7c50, type: 3}
+  - {fileID: 21300000, guid: 8512e741e328340109a1b7b5b0dfe266, type: 3}
+  - {fileID: 21300000, guid: 853e7183de3b14d0daa7c32f35805df5, type: 3}
+  - {fileID: 21300000, guid: 7dbae65ac317343408bbf4cae943e915, type: 3}
+  - {fileID: 21300000, guid: 1dfa65ee8b09b4971bb926d96b0b57d5, type: 3}
+  - {fileID: 21300000, guid: c694e5168991e40dc9002b6db9d2b364, type: 3}
+  - {fileID: 21300000, guid: 8170e59b9b7154692bd7a43266076059, type: 3}
+  flowManager: {fileID: 8877811}
+  changeInterval: 0.15
 --- !u!1 &2041002056
 GameObject:
   m_ObjectHideFlags: 0
