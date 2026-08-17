@@ -1,45 +1,74 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class boss : MonoBehaviour
 {
-    [SerializeField] Transform normalMoveCenterTf;
-    [SerializeField] float normalMoveRadius;
+    [SerializeField] bossNormalAttackPhase normalAttackPhase;
+    [SerializeField] List<bossSpecialAttackPhase> specialAttackPhases = new List<bossSpecialAttackPhase>();
 
-    [SerializeField] int normalBulletFireCount = 1;
-    [SerializeField] float normalBulletFireTime = 1;
-    [SerializeField] bossFireController bossFireControllerRf;
-
-    [SerializeField] Transform playerTf;
-    [SerializeField] int homingBulletFireCount = 1;
-    [SerializeField] float homingBulletFireTime = 1;
-    [SerializeField] homingBulletFireController bossHomingBulletFireController;
-
-    bossNormalMove bossMoveRf;
-    bossFireTimer bossNormalBulletFireTiemr;
-    bossFireTimer bossHomingBulletFireTimer;
+    bossAttackPhaseController attackPhaseController;
+    bool hasStarted;
+    bool isDefeated;
 
     void Awake()
     {
-        bossMoveRf = new bossNormalMove();
-        bossNormalBulletFireTiemr = new bossFireTimer(normalBulletFireTime);
-        bossHomingBulletFireTimer = new bossFireTimer(homingBulletFireTime);
+        attackPhaseController = new bossAttackPhaseController(
+            normalAttackPhase,
+            new bossSpecialAttackSelector(specialAttackPhases));
+    }
 
-        normalMoveRadius = Mathf.Max(0.1f, normalMoveRadius);
-        normalBulletFireCount = Mathf.Max(1, normalBulletFireCount);
+    void Start()
+    {
+        hasStarted = true;
+        startAttackPhases();
+    }
+
+    void OnEnable()
+    {
+        if (hasStarted)
+        {
+            startAttackPhases();
+        }
     }
 
     void FixedUpdate()
     {
-        transform.localPosition = bossMoveRf.movePosGet(normalMoveCenterTf.localPosition, normalMoveRadius);
-
-        if (bossNormalBulletFireTiemr.tryFire(Time.fixedDeltaTime))
+        if (isDefeated || Time.timeScale <= 0f)
         {
-            bossFireControllerRf.bulletsFire(transform, normalBulletFireCount);
+            return;
         }
 
-        if (bossHomingBulletFireController != null && bossHomingBulletFireTimer.tryFire(Time.fixedDeltaTime))
+        attackPhaseController.updatePhase(Time.fixedDeltaTime);
+    }
+
+    void OnDisable()
+    {
+        attackPhaseController?.end();
+    }
+
+    void OnDestroy()
+    {
+        attackPhaseController?.end();
+    }
+
+    public void bossDefeated()
+    {
+        if (isDefeated)
         {
-            bossHomingBulletFireController.homingBulletsFire(transform, playerTf, homingBulletFireCount);
+            return;
         }
+
+        isDefeated = true;
+        attackPhaseController.end();
+    }
+
+    void startAttackPhases()
+    {
+        if (isDefeated)
+        {
+            return;
+        }
+
+        attackPhaseController.start();
     }
 }

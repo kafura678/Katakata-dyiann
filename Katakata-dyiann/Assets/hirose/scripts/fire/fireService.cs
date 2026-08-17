@@ -14,7 +14,7 @@ public class fireService
         Vector3 dir = (targetPos - firePos).normalized;
 
         Vector3 backDir = -dir;
-        Vector3 sideDir = new Vector3(-dir.y, dir.x, dir.z);
+        Vector3 sideDir = new Vector3(-dir.y, dir.x, 0f);
 
         float sideDirSign = Random.value < 0.5f ? -1f : 1f;
         return (backDir * backWeight + sideDirSign * sideDir * sideWeight).normalized;
