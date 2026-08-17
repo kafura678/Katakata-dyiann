@@ -368,7 +368,7 @@ MonoBehaviour:
   - {fileID: 7817583928242783668}
   - {fileID: 6714301529369084604}
   - {fileID: 6728844590782764593}
-  flowModePauseCondition: {fileID: 0}
+  flowModePauseCondition: {fileID: 2556995114305230152}
 --- !u!1 &3117448223529837875
 GameObject:
   m_ObjectHideFlags: 0
