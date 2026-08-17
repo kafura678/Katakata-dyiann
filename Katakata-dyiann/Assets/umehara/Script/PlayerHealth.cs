@@ -8,6 +8,7 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("HP")]
+
     [Tooltip("最大ハート数")]
     [SerializeField]
     private int maxHearts = 3;
@@ -20,6 +21,7 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("被弾後の無敵")]
+
     [Tooltip("被弾後の無敵時間")]
     [SerializeField]
     private float invincibleTime = 1f;
@@ -40,6 +42,7 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド")]
+
     [Tooltip("シールドの最大耐久")]
     [SerializeField]
     private int maxShieldHealth = 3;
@@ -52,6 +55,7 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド画像")]
+
     [Tooltip("シールド画像1")]
     [SerializeField]
     private SpriteRenderer shieldRenderer1;
@@ -66,6 +70,7 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド色")]
+
     [Tooltip("耐久3の色")]
     [SerializeField]
     private Color shieldBlue = Color.blue;
@@ -84,6 +89,7 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド透明度")]
+
     [Tooltip("シールド画像1の透明度")]
     [SerializeField, Range(0f, 1f)]
     private float shieldAlpha1 = 1f;
@@ -94,12 +100,21 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
+    // AudioSource
+    // ==================================================
+
+    [Header("SE共通")]
+
+    [Tooltip("SE再生用AudioSource")]
+    [SerializeField]
+    private AudioSource audioSource;
+
+
+    // ==================================================
     // ダメージSE
     // ==================================================
 
     [Header("ダメージSE")]
-    [SerializeField]
-    private AudioSource audioSource;
 
     [SerializeField]
     private AudioClip damageSE;
@@ -109,20 +124,50 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
+    // HEAL SE
+    // ==================================================
+
+    [Header("HP回復SE")]
+
+    [Tooltip("HP回復成功時のSE")]
+    [SerializeField]
+    private AudioClip healSE;
+
+    [SerializeField, Range(0f, 1f)]
+    private float healSEVolume = 1f;
+
+
+    // ==================================================
+    // SHIELD SE
+    // ==================================================
+
+    [Header("シールド獲得SE")]
+
+    [Tooltip("シールド獲得時のSE")]
+    [SerializeField]
+    private AudioClip shieldGetSE;
+
+    [SerializeField, Range(0f, 1f)]
+    private float shieldGetSEVolume = 1f;
+
+
+    // ==================================================
     // 死亡エフェクト
     // ==================================================
 
     [Header("死亡エフェクト")]
+
     [Tooltip("死亡時に生成する爆発Prefab")]
     [SerializeField]
     private GameObject explosionEffectPrefab;
 
 
     // ==================================================
-    // プレイヤー当たり判定
+    // Collider
     // ==================================================
 
     [Header("死亡時に無効化する当たり判定")]
+
     [SerializeField]
     private Collider2D[] playerColliders;
 
@@ -239,6 +284,17 @@ public class PlayerHealth : MonoBehaviour
         {
             playerColliders =
                 GetComponentsInChildren<Collider2D>();
+        }
+
+
+        // ==========================================
+        // AudioSource自動取得
+        // ==========================================
+
+        if (audioSource == null)
+        {
+            audioSource =
+                GetComponent<AudioSource>();
         }
 
 
@@ -406,11 +462,19 @@ public class PlayerHealth : MonoBehaviour
         int amount
     )
     {
+        // ==========================================
+        // 死亡中
+        // ==========================================
+
         if (isDead)
         {
             return;
         }
 
+
+        // ==========================================
+        // 無効な回復量
+        // ==========================================
 
         if (amount <= 0)
         {
@@ -418,11 +482,21 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
+        // ==========================================
+        // 最大HPなら回復しない
+        //
+        // この場合はSEも鳴らさない
+        // ==========================================
+
         if (currentHearts >= maxHearts)
         {
             return;
         }
 
+
+        // ==========================================
+        // HP回復
+        // ==========================================
 
         currentHearts +=
             amount;
@@ -436,7 +510,18 @@ public class PlayerHealth : MonoBehaviour
             );
 
 
+        // ==========================================
+        // UI更新
+        // ==========================================
+
         UpdateHeartUI();
+
+
+        // ==========================================
+        // 回復SE
+        // ==========================================
+
+        PlayHealSE();
 
 
         Debug.Log(
@@ -460,11 +545,28 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
+        // ==========================================
+        // すでに最大HP
+        // ==========================================
+
+        if (currentHearts >= maxHearts)
+        {
+            return;
+        }
+
+
+        // ==========================================
+        // 全回復
+        // ==========================================
+
         currentHearts =
             maxHearts;
 
 
         UpdateHeartUI();
+
+
+        PlayHealSE();
     }
 
 
@@ -489,7 +591,18 @@ public class PlayerHealth : MonoBehaviour
             maxShieldHealth;
 
 
+        // ==========================================
+        // 表示更新
+        // ==========================================
+
         UpdateShieldVisual();
+
+
+        // ==========================================
+        // シールド獲得SE
+        // ==========================================
+
+        PlayShieldGetSE();
 
 
         Debug.Log(
@@ -557,7 +670,8 @@ public class PlayerHealth : MonoBehaviour
 
         if (shieldRenderer1 != null)
         {
-            shieldRenderer1.gameObject
+            shieldRenderer1
+                .gameObject
                 .SetActive(
                     isActive
                 );
@@ -566,14 +680,18 @@ public class PlayerHealth : MonoBehaviour
 
         if (shieldRenderer2 != null)
         {
-            shieldRenderer2.gameObject
+            shieldRenderer2
+                .gameObject
                 .SetActive(
                     isActive
                 );
         }
 
 
+        // ==========================================
         // シールドなし
+        // ==========================================
+
         if (!isActive)
         {
             return;
@@ -581,7 +699,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 耐久に応じた色
+        // 耐久に応じて色変更
         // ==========================================
 
         Color currentColor;
@@ -589,19 +707,19 @@ public class PlayerHealth : MonoBehaviour
 
         if (shieldHealth >= 3)
         {
-            // 耐久3：青
+            // 耐久3
             currentColor =
                 shieldBlue;
         }
         else if (shieldHealth == 2)
         {
-            // 耐久2：黄
+            // 耐久2
             currentColor =
                 shieldYellow;
         }
         else
         {
-            // 耐久1：赤
+            // 耐久1
             currentColor =
                 shieldRed;
         }
@@ -742,6 +860,50 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
+    // HEAL SE
+    // ==================================================
+
+    private void PlayHealSE()
+    {
+        if (
+            audioSource == null ||
+            healSE == null
+        )
+        {
+            return;
+        }
+
+
+        audioSource.PlayOneShot(
+            healSE,
+            healSEVolume
+        );
+    }
+
+
+    // ==================================================
+    // SHIELD SE
+    // ==================================================
+
+    private void PlayShieldGetSE()
+    {
+        if (
+            audioSource == null ||
+            shieldGetSE == null
+        )
+        {
+            return;
+        }
+
+
+        audioSource.PlayOneShot(
+            shieldGetSE,
+            shieldGetSEVolume
+        );
+    }
+
+
+    // ==================================================
     // HeartUI
     // ==================================================
 
@@ -781,7 +943,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 無敵点滅などを停止
+        // 点滅Coroutine停止
         // ==========================================
 
         StopAllCoroutines();
@@ -799,7 +961,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // プレイヤー画像を非表示
+        // プレイヤー画像OFF
         // ==========================================
 
         if (playerRenderer != null)
@@ -810,7 +972,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 当たり判定を無効化
+        // Collider OFF
         // ==========================================
 
         SetPlayerColliders(
@@ -843,7 +1005,7 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // 爆発エフェクト生成
+    // 爆発エフェクト
     // ==================================================
 
     private void SpawnExplosion()
@@ -876,10 +1038,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
-        foreach (
-            Collider2D col
-            in playerColliders
-        )
+        foreach (Collider2D col in playerColliders)
         {
             if (col == null)
             {
@@ -940,7 +1099,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 弾を削除
+        // 弾削除
         // ==========================================
 
         Destroy(

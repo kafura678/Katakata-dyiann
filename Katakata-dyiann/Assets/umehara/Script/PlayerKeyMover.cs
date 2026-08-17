@@ -56,12 +56,12 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // プレイヤー当たり判定
+    // プレイヤーCollider
     // ==================================================
 
     [Header("プレイヤー当たり判定")]
 
-    [Tooltip("移動中に無効化するCollider")]
+    [Tooltip("移動中・超必殺中に無効化するCollider")]
     [SerializeField]
     private Collider2D[] playerColliders;
 
@@ -72,7 +72,7 @@ public class PlayerKeyMover : MonoBehaviour
 
     [Header("移動先の敵判定")]
 
-    [Tooltip("キー位置に敵がいるか判定する半径")]
+    [Tooltip("移動先に敵がいるか調べる半径")]
     [SerializeField]
     private float movePointCheckRadius = 0.45f;
 
@@ -87,7 +87,6 @@ public class PlayerKeyMover : MonoBehaviour
 
     [Header("通常攻撃")]
 
-    [Tooltip("斬撃判定を取るLayer")]
     [SerializeField]
     private LayerMask enemyLayer;
 
@@ -110,26 +109,41 @@ public class PlayerKeyMover : MonoBehaviour
 
     [Header("ランダムダメージ")]
 
-    [Tooltip("ダメージの最低倍率")]
+    [Tooltip("最低ダメージ倍率")]
     [SerializeField]
     private float minimumRandomDamageRate = 0.9f;
 
-    [Tooltip("ダメージの最高倍率")]
+    [Tooltip("最高ダメージ倍率")]
     [SerializeField]
     private float maximumRandomDamageRate = 1.1f;
 
 
     // ==================================================
-    // 斬撃ライン
+    // 移動軌跡
     // ==================================================
 
-    [Header("斬撃ライン")]
+    [Header("移動軌跡")]
 
     [SerializeField]
     private LineRenderer slashLine;
 
     [SerializeField]
     private float slashLineTime = 0.08f;
+
+
+    // ==================================================
+    // 斬撃エフェクト
+    // ==================================================
+
+    [Header("斬撃エフェクト")]
+
+    [Tooltip("SlashEffectが付いた斬撃Prefab")]
+    [SerializeField]
+    private GameObject slashEffectPrefab;
+
+    [Tooltip("斬撃画像の回転角度補正")]
+    [SerializeField]
+    private float slashEffectAngleOffset = 0f;
 
 
     // ==================================================
@@ -149,19 +163,40 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
+    // SE共通
+    // ==================================================
+
+    [Header("SE共通")]
+
+    [SerializeField]
+    private AudioSource audioSource;
+
+
+    // ==================================================
     // 移動SE
     // ==================================================
 
     [Header("移動SE")]
 
     [SerializeField]
-    private AudioSource audioSource;
-
-    [SerializeField]
     private AudioClip moveSE;
 
     [SerializeField, Range(0f, 1f)]
     private float moveSEVolume = 1f;
+
+
+    // ==================================================
+    // 斬撃SE
+    // ==================================================
+
+    [Header("斬撃SE")]
+
+    [Tooltip("敵にダメージを与えた時だけ再生")]
+    [SerializeField]
+    private AudioClip slashSE;
+
+    [SerializeField, Range(0f, 1f)]
+    private float slashSEVolume = 1f;
 
 
     // ==================================================
@@ -179,7 +214,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 超必殺：対象ボス
+    // 超必殺：ボス
     // ==================================================
 
     [Header("超必殺・対象ボス")]
@@ -189,7 +224,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 超必殺：連続攻撃
+    // 超必殺：高速連撃
     // ==================================================
 
     [Header("超必殺・連続攻撃")]
@@ -198,15 +233,15 @@ public class PlayerKeyMover : MonoBehaviour
     [SerializeField]
     private int ultimateRushCount = 8;
 
-    [Tooltip("連続攻撃1回の基本ダメージ")]
+    [Tooltip("1回あたりの基本ダメージ")]
     [SerializeField]
     private float ultimateRushDamage = 4f;
 
-    [Tooltip("連続攻撃時の移動時間")]
+    [Tooltip("1回の高速移動時間")]
     [SerializeField]
     private float ultimateRushMoveDuration = 0.04f;
 
-    [Tooltip("ボス周辺を移動する半径")]
+    [Tooltip("ボスからどの程度離れた位置を移動するか")]
     [SerializeField]
     private float ultimateRushRadius = 1.2f;
 
@@ -221,11 +256,10 @@ public class PlayerKeyMover : MonoBehaviour
 
     [Header("超必殺・ビーム")]
 
-    [Tooltip("ビームPrefab")]
     [SerializeField]
     private GameObject beamPrefab;
 
-    [Tooltip("ビーム1ヒットあたりの基本ダメージ")]
+    [Tooltip("ビーム1ヒットの基本ダメージ")]
     [SerializeField]
     private float beamDamage = 5f;
 
@@ -233,19 +267,19 @@ public class PlayerKeyMover : MonoBehaviour
     [SerializeField]
     private float beamChargeTime = 0.25f;
 
-    [Tooltip("ビームを表示する時間")]
+    [Tooltip("ビーム本体が攻撃を続ける時間")]
     [SerializeField]
-    private float beamLifeTime = 1.0f;
+    private float beamLifeTime = 1f;
 
-    [Tooltip("ビームがダメージを与える間隔")]
+    [Tooltip("何秒ごとにビームダメージを与えるか")]
     [SerializeField]
     private float beamDamageInterval = 0.1f;
 
-    [Tooltip("ボスから横へ離れる距離")]
+    [Tooltip("ビーム発射時にボスから離れる距離")]
     [SerializeField]
     private float beamSideDistance = 2f;
 
-    [Tooltip("ボス横への移動時間")]
+    [Tooltip("ビーム発射位置への移動時間")]
     [SerializeField]
     private float beamPositionMoveDuration = 0.08f;
 
@@ -270,16 +304,45 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // ビームSE
+    // ビーム終了アニメーション
     // ==================================================
 
-    [Header("ビームSE")]
+    [Header("ビーム終了アニメーション")]
+
+    [Tooltip("ビーム終了時に順番に表示する画像")]
+    [SerializeField]
+    private Sprite[] beamEndSprites;
+
+    [Tooltip("終了アニメーション1枚あたりの表示時間")]
+    [SerializeField]
+    private float beamEndFrameInterval = 0.05f;
+
+
+    // ==================================================
+    // ビーム発射SE
+    // ==================================================
+
+    [Header("ビーム発射SE")]
 
     [SerializeField]
     private AudioClip beamSE;
 
     [SerializeField, Range(0f, 1f)]
     private float beamSEVolume = 1f;
+
+
+    // ==================================================
+    // ビームヒットSE
+    // ==================================================
+
+    [Header("ビームヒットSE")]
+
+    [Tooltip("ビームでダメージを与えるたびに再生")]
+    [SerializeField]
+    private AudioClip beamHitSE;
+
+    [SerializeField, Range(0f, 1f)]
+    private float beamHitSEVolume = 1f;
 
 
     // ==================================================
@@ -290,7 +353,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 他スクリプト
+    // 他コンポーネント
     // ==================================================
 
     private PlayerHealth playerHealth;
@@ -314,6 +377,13 @@ public class PlayerKeyMover : MonoBehaviour
             playerColliders =
                 GetComponentsInChildren<Collider2D>();
         }
+
+
+        if (audioSource == null)
+        {
+            audioSource =
+                GetComponent<AudioSource>();
+        }
     }
 
 
@@ -334,7 +404,6 @@ public class PlayerKeyMover : MonoBehaviour
 
     private void Update()
     {
-        // 死亡中
         if (
             playerHealth != null &&
             playerHealth.IsDead
@@ -344,7 +413,6 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
-        // 超必殺中
         if (isUltimatePlaying)
         {
             return;
@@ -403,10 +471,7 @@ public class PlayerKeyMover : MonoBehaviour
             // ==========================================
             // 移動先に敵がいる
             //
-            // ダメージを受ける
-            // 移動しない
-            // 攻撃しない
-            // コマンド入力しない
+            // ダメージだけ受けて移動しない
             // ==========================================
 
             if (IsEnemyAtPosition(targetPosition))
@@ -415,14 +480,9 @@ public class PlayerKeyMover : MonoBehaviour
                     damageOnBlockedMove
                 );
 
-
                 return;
             }
 
-
-            // ==========================================
-            // 通常移動
-            // ==========================================
 
             StartCoroutine(
                 MoveAndSlash(
@@ -450,10 +510,6 @@ public class PlayerKeyMover : MonoBehaviour
             true;
 
 
-        // ==========================================
-        // 移動中はCollider OFF
-        // ==========================================
-
         SetPlayerColliders(
             false
         );
@@ -479,7 +535,10 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // 攻撃
+        // 攻撃判定
+        //
+        // ヒットした敵の位置でのみ
+        // SlashEffect + SlashSE
         // ==========================================
 
         DamageEnemiesOnLine(
@@ -490,7 +549,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // 演出
+        // 移動演出
         // ==========================================
 
         PlayMoveEffects(
@@ -522,7 +581,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // Colliderを戻す
+        // Collider復帰
         // ==========================================
 
         if (
@@ -555,7 +614,6 @@ public class PlayerKeyMover : MonoBehaviour
         {
             transform.position =
                 end;
-
 
             yield break;
         }
@@ -624,7 +682,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 通常攻撃ダメージ計算
+    // 通常攻撃ダメージ
     // ==================================================
 
     private float CalculateDamage(
@@ -638,10 +696,6 @@ public class PlayerKeyMover : MonoBehaviour
                 end
             );
 
-
-        // ==========================================
-        // 基本値 + 移動距離
-        // ==========================================
 
         float damage =
             baseDamage +
@@ -662,31 +716,23 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // ±10%ランダム + 最大ダメージ
+        // ±10% + 最大ダメージ
         // ==========================================
 
-        damage =
-            FinalizeDamage(
-                damage
-            );
-
-
-        return damage;
+        return FinalizeDamage(
+            damage
+        );
     }
 
 
     // ==================================================
-    // 最終ダメージ調整
+    // 最終ダメージ
     // ==================================================
 
     private float FinalizeDamage(
         float damage
     )
     {
-        // ==========================================
-        // ±10%ランダム
-        // ==========================================
-
         float minimum =
             Mathf.Min(
                 minimumRandomDamageRate,
@@ -700,6 +746,10 @@ public class PlayerKeyMover : MonoBehaviour
                 maximumRandomDamageRate
             );
 
+
+        // ==========================================
+        // ランダムダメージ
+        // ==========================================
 
         damage *=
             Random.Range(
@@ -727,7 +777,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 直線斬撃
+    // 直線攻撃
     // ==================================================
 
     private void DamageEnemiesOnLine(
@@ -760,10 +810,6 @@ public class PlayerKeyMover : MonoBehaviour
                 enemyLayer
             );
 
-
-        // ==========================================
-        // 複数Collider対策
-        // ==========================================
 
         HashSet<Enemy> damagedEnemies =
             new HashSet<Enemy>();
@@ -802,6 +848,17 @@ public class PlayerKeyMover : MonoBehaviour
                 }
 
 
+                // ==================================
+                // ダメージ前に位置を保存
+                //
+                // TakeDamageで敵が死亡しても
+                // この位置にエフェクトを出せる
+                // ==================================
+
+                Vector3 hitPosition =
+                    enemy.transform.position;
+
+
                 enemy.TakeDamage(
                     damage
                 );
@@ -810,6 +867,19 @@ public class PlayerKeyMover : MonoBehaviour
                 damagedEnemies.Add(
                     enemy
                 );
+
+
+                // ==================================
+                // ヒット時だけ斬撃
+                // ==================================
+
+                SpawnSlashEffect(
+                    hitPosition,
+                    direction
+                );
+
+
+                PlaySlashSE();
 
 
                 OnSuccessfulAttack();
@@ -840,6 +910,10 @@ public class PlayerKeyMover : MonoBehaviour
                 }
 
 
+                Vector3 hitPosition =
+                    minion.transform.position;
+
+
                 minion.TakeDamage(
                     damage
                 );
@@ -848,6 +922,19 @@ public class PlayerKeyMover : MonoBehaviour
                 damagedMinions.Add(
                     minion
                 );
+
+
+                // ==================================
+                // ヒット時だけ斬撃
+                // ==================================
+
+                SpawnSlashEffect(
+                    hitPosition,
+                    direction
+                );
+
+
+                PlaySlashSE();
 
 
                 OnSuccessfulAttack();
@@ -863,7 +950,7 @@ public class PlayerKeyMover : MonoBehaviour
     private void OnSuccessfulAttack()
     {
         // ==========================================
-        // コンボ
+        // Combo
         // ==========================================
 
         if (ComboManager.Instance != null)
@@ -908,11 +995,19 @@ public class PlayerKeyMover : MonoBehaviour
         Vector3 end
     )
     {
+        // ==========================================
+        // 残像
+        // ==========================================
+
         ShowAfterImages(
             start,
             end
         );
 
+
+        // ==========================================
+        // 高速移動の軌跡
+        // ==========================================
 
         if (slashLine != null)
         {
@@ -925,12 +1020,18 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
+        // ==========================================
+        // 移動SEだけ
+        //
+        // 斬撃SEはここでは鳴らさない
+        // ==========================================
+
         PlayMoveSE();
     }
 
 
     // ==================================================
-    // 斬撃ライン
+    // 移動軌跡
     // ==================================================
 
     private IEnumerator ShowSlashLine(
@@ -971,6 +1072,63 @@ public class PlayerKeyMover : MonoBehaviour
 
         slashLine.enabled =
             false;
+    }
+
+
+    // ==================================================
+    // 斬撃エフェクト
+    // ==================================================
+
+    private void SpawnSlashEffect(
+        Vector3 spawnPosition,
+        Vector2 attackDirection
+    )
+    {
+        if (slashEffectPrefab == null)
+        {
+            return;
+        }
+
+
+        if (
+            attackDirection.sqrMagnitude <=
+            0.001f
+        )
+        {
+            return;
+        }
+
+
+        float angle =
+            Mathf.Atan2(
+                attackDirection.y,
+                attackDirection.x
+            )
+            *
+            Mathf.Rad2Deg;
+
+
+        angle +=
+            slashEffectAngleOffset;
+
+
+        Quaternion rotation =
+            Quaternion.Euler(
+                0f,
+                0f,
+                angle
+            );
+
+
+        // ==========================================
+        // 敵の位置に生成
+        // ==========================================
+
+        Instantiate(
+            slashEffectPrefab,
+            spawnPosition,
+            rotation
+        );
     }
 
 
@@ -1025,7 +1183,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 移動SE
+    // SE
     // ==================================================
 
     private void PlayMoveSE()
@@ -1046,9 +1204,23 @@ public class PlayerKeyMover : MonoBehaviour
     }
 
 
-    // ==================================================
-    // ビームSE
-    // ==================================================
+    private void PlaySlashSE()
+    {
+        if (
+            audioSource == null ||
+            slashSE == null
+        )
+        {
+            return;
+        }
+
+
+        audioSource.PlayOneShot(
+            slashSE,
+            slashSEVolume
+        );
+    }
+
 
     private void PlayBeamSE()
     {
@@ -1068,8 +1240,26 @@ public class PlayerKeyMover : MonoBehaviour
     }
 
 
+    private void PlayBeamHitSE()
+    {
+        if (
+            audioSource == null ||
+            beamHitSE == null
+        )
+        {
+            return;
+        }
+
+
+        audioSource.PlayOneShot(
+            beamHitSE,
+            beamHitSEVolume
+        );
+    }
+
+
     // ==================================================
-    // 現在位置判定
+    // 現在位置
     // ==================================================
 
     private bool IsSamePosition(
@@ -1087,7 +1277,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 移動先に敵がいるか
+    // 移動先の敵
     // ==================================================
 
     private bool IsEnemyAtPosition(
@@ -1120,7 +1310,6 @@ public class PlayerKeyMover : MonoBehaviour
                 .ToUpper();
 
 
-        // A～Zのみ
         if (keyString.Length != 1)
         {
             return;
@@ -1228,7 +1417,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // 最後の1文字から新しい単語
+        // 最後の文字から別コマンドを開始
         // ==========================================
 
         char lastCharacter =
@@ -1291,10 +1480,6 @@ public class PlayerKeyMover : MonoBehaviour
         }
     }
 
-
-    // ==================================================
-    // 有効なコマンドか
-    // ==================================================
 
     private bool IsValidCommand(
         WordCommand command
@@ -1379,7 +1564,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         Debug.Log(
-            "HEAL発動：HPを1回復"
+            "HEAL発動"
         );
     }
 
@@ -1400,7 +1585,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         Debug.Log(
-            "SHIELD発動：シールド獲得"
+            "SHIELD発動"
         );
     }
 
@@ -1446,17 +1631,13 @@ public class PlayerKeyMover : MonoBehaviour
             true;
 
 
-        // ==========================================
-        // 超必殺中はCollider OFF
-        // ==========================================
-
         SetPlayerColliders(
             false
         );
 
 
         // ==========================================
-        // boss取得
+        // ボス取得
         // ==========================================
 
         if (bossTarget == null)
@@ -1475,14 +1656,9 @@ public class PlayerKeyMover : MonoBehaviour
 
             FinishUltimate();
 
-
             yield break;
         }
 
-
-        // ==========================================
-        // Enemy取得
-        // ==========================================
 
         Enemy bossEnemy =
             GetBossEnemy();
@@ -1497,13 +1673,12 @@ public class PlayerKeyMover : MonoBehaviour
 
             FinishUltimate();
 
-
             yield break;
         }
 
 
         // ==========================================
-        // 連続高速攻撃
+        // 高速連撃
         // ==========================================
 
         yield return StartCoroutine(
@@ -1526,7 +1701,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // ボス横へ移動
+        // ビーム位置へ移動
         // ==========================================
 
         yield return StartCoroutine(
@@ -1571,7 +1746,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // 連続ビーム
+        // ビーム
         // ==========================================
 
         yield return StartCoroutine(
@@ -1582,16 +1757,12 @@ public class PlayerKeyMover : MonoBehaviour
         );
 
 
-        // ==========================================
-        // 終了
-        // ==========================================
-
         FinishUltimate();
     }
 
 
     // ==================================================
-    // bossからEnemy取得
+    // ボスEnemy取得
     // ==================================================
 
     private Enemy GetBossEnemy()
@@ -1630,7 +1801,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 超必殺：連続高速攻撃
+    // 超必殺：高速連撃
     // ==================================================
 
     private IEnumerator UltimateRushAttack(
@@ -1638,6 +1809,12 @@ public class PlayerKeyMover : MonoBehaviour
         Enemy bossEnemy
     )
     {
+        if (ultimateRushCount <= 0)
+        {
+            yield break;
+        }
+
+
         for (
             int i = 0;
             i < ultimateRushCount;
@@ -1653,10 +1830,6 @@ public class PlayerKeyMover : MonoBehaviour
             }
 
 
-            // ======================================
-            // ボス周囲の攻撃位置
-            // ======================================
-
             float angle =
                 (
                     360f /
@@ -1666,7 +1839,6 @@ public class PlayerKeyMover : MonoBehaviour
                 i;
 
 
-            // 単純な円運動に見えないようずらす
             if (i % 2 == 1)
             {
                 angle +=
@@ -1690,9 +1862,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             Vector3 targetPosition =
-                targetBoss
-                    .transform
-                    .position
+                targetBoss.transform.position
                 +
                 offset;
 
@@ -1724,7 +1894,20 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             // ======================================
-            // ±10%ランダムダメージ
+            // ボス位置保存
+            // ======================================
+
+            Vector3 bossHitPosition =
+                targetBoss.transform.position;
+
+
+            Vector2 attackDirection =
+                targetPosition -
+                startPosition;
+
+
+            // ======================================
+            // ダメージ
             // ======================================
 
             float damage =
@@ -1739,7 +1922,20 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             // ======================================
-            // 演出
+            // ダメージを与えたので斬撃発生
+            // ======================================
+
+            SpawnSlashEffect(
+                bossHitPosition,
+                attackDirection
+            );
+
+
+            PlaySlashSE();
+
+
+            // ======================================
+            // 残像
             // ======================================
 
             ShowAfterImages(
@@ -1747,6 +1943,10 @@ public class PlayerKeyMover : MonoBehaviour
                 targetPosition
             );
 
+
+            // ======================================
+            // 移動軌跡
+            // ======================================
 
             if (slashLine != null)
             {
@@ -1759,12 +1959,12 @@ public class PlayerKeyMover : MonoBehaviour
             }
 
 
+            // ======================================
+            // 移動SE
+            // ======================================
+
             PlayMoveSE();
 
-
-            // ======================================
-            // 次の攻撃
-            // ======================================
 
             if (ultimateRushInterval > 0f)
             {
@@ -1777,7 +1977,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 超必殺：ボス横へ移動
+    // 超必殺：ビーム位置へ移動
     // ==================================================
 
     private IEnumerator MoveBesideBoss(
@@ -1791,9 +1991,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         Vector3 bossPosition =
-            targetBoss
-                .transform
-                .position;
+            targetBoss.transform.position;
 
 
         Vector3 leftPosition =
@@ -1871,13 +2069,11 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // プレイヤー → ボス方向
+        // プレイヤー → ボス
         // ==========================================
 
         Vector3 bossDirection =
-            targetBoss
-                .transform
-                .position
+            targetBoss.transform.position
             -
             transform.position;
 
@@ -1897,10 +2093,6 @@ public class PlayerKeyMover : MonoBehaviour
 
         bossDirection.Normalize();
 
-
-        // ==========================================
-        // ビーム方向に対して垂直
-        // ==========================================
 
         Vector3 perpendicular =
             new Vector3(
@@ -1924,14 +2116,8 @@ public class PlayerKeyMover : MonoBehaviour
             beamSpawnOffset.y;
 
 
-        // ==========================================
-        // 出現位置 → ボス
-        // ==========================================
-
         Vector3 direction =
-            targetBoss
-                .transform
-                .position
+            targetBoss.transform.position
             -
             spawnPosition;
 
@@ -1950,7 +2136,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // 角度
+        // ビーム角度
         // ==========================================
 
         float angle =
@@ -1994,7 +2180,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // ビームSE
+        // 発射SE
         // ==========================================
 
         PlayBeamSE();
@@ -2002,7 +2188,6 @@ public class PlayerKeyMover : MonoBehaviour
 
         // ==========================================
         // ダメージ間隔
-        // 0以下を設定しても暴走しないよう最低値を設定
         // ==========================================
 
         float safeDamageInterval =
@@ -2021,7 +2206,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // 発射直後の1ヒット
+        // 最初の1ヒット
         // ==========================================
 
         if (
@@ -2029,16 +2214,14 @@ public class PlayerKeyMover : MonoBehaviour
             bossEnemy != null
         )
         {
-            bossEnemy.TakeDamage(
-                FinalizeDamage(
-                    beamDamage
-                )
+            DealBeamDamage(
+                bossEnemy
             );
         }
 
 
         // ==========================================
-        // 連続ダメージ
+        // 連続ビーム
         // ==========================================
 
         while (lifeTimer < beamLifeTime)
@@ -2055,10 +2238,6 @@ public class PlayerKeyMover : MonoBehaviour
                 deltaTime;
 
 
-            // ======================================
-            // ボス死亡 / 消滅
-            // ======================================
-
             if (
                 targetBoss == null ||
                 bossEnemy == null
@@ -2067,10 +2246,6 @@ public class PlayerKeyMover : MonoBehaviour
                 break;
             }
 
-
-            // ======================================
-            // ダメージ間隔に到達
-            // ======================================
 
             while (
                 damageTimer >=
@@ -2081,18 +2256,8 @@ public class PlayerKeyMover : MonoBehaviour
                     safeDamageInterval;
 
 
-                // ==================================
-                // 毎ヒット±10%
-                // ==================================
-
-                float damage =
-                    FinalizeDamage(
-                        beamDamage
-                    );
-
-
-                bossEnemy.TakeDamage(
-                    damage
+                DealBeamDamage(
+                    bossEnemy
                 );
 
 
@@ -2107,6 +2272,153 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             yield return null;
+        }
+
+
+        // ==========================================
+        // ビーム終了アニメーション
+        //
+        // ここからダメージなし
+        // ==========================================
+
+        if (beam != null)
+        {
+            yield return StartCoroutine(
+                PlayBeamEndAnimation(
+                    beam
+                )
+            );
+        }
+    }
+
+
+    // ==================================================
+    // ビーム1ヒット
+    // ==================================================
+
+    private void DealBeamDamage(
+        Enemy bossEnemy
+    )
+    {
+        if (bossEnemy == null)
+        {
+            return;
+        }
+
+
+        float damage =
+            FinalizeDamage(
+                beamDamage
+            );
+
+
+        bossEnemy.TakeDamage(
+            damage
+        );
+
+
+        // ==========================================
+        // ビーム専用ヒットSE
+        //
+        // SlashSEは鳴らさない
+        // ==========================================
+
+        PlayBeamHitSE();
+    }
+
+
+    // ==================================================
+    // ビーム終了アニメーション
+    // ==================================================
+
+    private IEnumerator PlayBeamEndAnimation(
+        GameObject beam
+    )
+    {
+        if (beam == null)
+        {
+            yield break;
+        }
+
+
+        SpriteRenderer beamRenderer =
+            beam.GetComponent<SpriteRenderer>();
+
+
+        if (beamRenderer == null)
+        {
+            beamRenderer =
+                beam.GetComponentInChildren<SpriteRenderer>();
+        }
+
+
+        // ==========================================
+        // SpriteRendererなし
+        // ==========================================
+
+        if (beamRenderer == null)
+        {
+            Destroy(
+                beam
+            );
+
+            yield break;
+        }
+
+
+        // ==========================================
+        // 終了画像なし
+        // ==========================================
+
+        if (
+            beamEndSprites == null ||
+            beamEndSprites.Length == 0
+        )
+        {
+            Destroy(
+                beam
+            );
+
+            yield break;
+        }
+
+
+        float safeInterval =
+            Mathf.Max(
+                0.01f,
+                beamEndFrameInterval
+            );
+
+
+        // ==========================================
+        // パラパラ漫画
+        // ==========================================
+
+        for (
+            int i = 0;
+            i < beamEndSprites.Length;
+            i++
+        )
+        {
+            if (beam == null)
+            {
+                yield break;
+            }
+
+
+            if (beamEndSprites[i] == null)
+            {
+                continue;
+            }
+
+
+            beamRenderer.sprite =
+                beamEndSprites[i];
+
+
+            yield return new WaitForSeconds(
+                safeInterval
+            );
         }
 
 
@@ -2129,10 +2441,6 @@ public class PlayerKeyMover : MonoBehaviour
 
     private void FinishUltimate()
     {
-        // ==========================================
-        // 生存中ならColliderを戻す
-        // ==========================================
-
         if (
             playerHealth == null ||
             !playerHealth.IsDead
@@ -2152,10 +2460,6 @@ public class PlayerKeyMover : MonoBehaviour
             false;
 
 
-        // ==========================================
-        // FLOW終了
-        // ==========================================
-
         if (FlowManager.Instance != null)
         {
             FlowManager.Instance
@@ -2165,7 +2469,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 外部からダメージ
+    // 外部ダメージ
     // ==================================================
 
     public void TakeDamage(
@@ -2185,7 +2489,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // Sceneビュー
+    // Gizmos
     // ==================================================
 
     private void OnDrawGizmosSelected()

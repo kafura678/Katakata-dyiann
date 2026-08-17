@@ -4297,6 +4297,8 @@ MonoBehaviour:
   maximumRandomDamageRate: 1.1
   slashLine: {fileID: 533974692}
   slashLineTime: 0.08
+  slashEffectPrefab: {fileID: 4531463458816427500, guid: 1a07d9126e19c4d11b684de86baa20f1, type: 3}
+  slashEffectAngleOffset: 0
   afterImagePrefab: {fileID: 5078891719955181059, guid: e684418b1d3de473cb3c0edc2985d913, type: 3}
   afterImageCount: 4
   afterImageLifeTime: 0.2
@@ -4325,6 +4327,8 @@ MonoBehaviour:
   beamSpawnOffset: {x: 0, y: 0}
   beamSE: {fileID: 8300000, guid: d9dd3c81488554d1ca1abbc4a09edd88, type: 3}
   beamSEVolume: 1
+  beamHitSE: {fileID: 0}
+  beamHitSEVolume: 1
 --- !u!50 &1813944311
 Rigidbody2D:
   serializedVersion: 5
@@ -4415,6 +4419,10 @@ MonoBehaviour:
   audioSource: {fileID: 1813944314}
   damageSE: {fileID: 8300000, guid: f0786fc7b46fb4e7188d386e21d2dc2a, type: 3}
   damageSEVolume: 1
+  healSE: {fileID: 0}
+  healSEVolume: 1
+  shieldGetSE: {fileID: 8300000, guid: 506049402100e404495663cf1dff224c, type: 3}
+  shieldGetSEVolume: 1
   explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
   playerColliders: []
 --- !u!82 &1813944314
