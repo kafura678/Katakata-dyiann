@@ -270,14 +270,11 @@ public class FlowManager : MonoBehaviour
 
     public void StartFlowMode()
     {
-        // すでにフロー中
         if (isFlowMode)
         {
             return;
         }
 
-
-        // ゲージ不足
         if (flowGauge < maxFlowGauge)
         {
             return;
@@ -289,11 +286,25 @@ public class FlowManager : MonoBehaviour
         flowTimer =
             flowDuration;
 
-        attackCountInFlow = 0;
+        attackCountInFlow =
+            0;
 
-        isUltimateReady = false;
+        isUltimateReady =
+            false;
 
-        isUltimatePlaying = false;
+        isUltimatePlaying =
+            false;
+
+
+        // ==========================================
+        // FLOW用BGMへ切り替え
+        // ==========================================
+
+        if (BGMManager.Instance != null)
+        {
+            BGMManager.Instance
+                .StartFlowBGM();
+        }
 
 
         Debug.Log(
@@ -467,15 +478,27 @@ public class FlowManager : MonoBehaviour
         isFlowMode = false;
 
         isUltimateReady = false;
-
         isUltimatePlaying = false;
 
-
         flowGauge = 0f;
-
         flowTimer = 0f;
-
         attackCountInFlow = 0;
+
+
+        // BGMを通常に戻す
+        if (BGMManager.Instance != null)
+        {
+            Debug.Log("通常BGMへ戻します");
+
+            BGMManager.Instance
+                .EndFlowBGM();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "BGMManager.Instanceがnullです"
+            );
+        }
 
 
         Debug.Log(
