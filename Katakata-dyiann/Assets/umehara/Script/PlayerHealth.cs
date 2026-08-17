@@ -3,152 +3,675 @@ using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("ハート設定")]
-    [SerializeField] private int maxHearts = 3;
-    [SerializeField] private int currentHearts;
+    // ==================================================
+    // HP
+    // ==================================================
 
-    [Header("被弾設定")]
-    [SerializeField] private float invincibleTime = 1f;
-    [SerializeField] private SpriteRenderer playerRenderer;
+    [Header("HP")]
 
-    [Header("被弾SE")]
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip damageSE;
-    [SerializeField, Range(0f, 1f)] private float damageSEVolume = 1f;
+    [Tooltip("最大ハート数")]
+    [SerializeField]
+    private int maxHearts = 3;
 
-    private bool isInvincible;
-    private bool isDead;
+    private int currentHearts;
 
-    public int MaxHearts => maxHearts;
-    public int CurrentHearts => currentHearts;
-    public bool IsDead => isDead;
+
+    // ==================================================
+    // 被弾後の無敵
+    // ==================================================
+
+    [Header("被弾後の無敵")]
+
+    [Tooltip("被弾後の無敵時間")]
+    [SerializeField]
+    private float invincibleTime = 1f;
+
+    [Tooltip("点滅する間隔")]
+    [SerializeField]
+    private float blinkInterval = 0.1f;
+
+    [Tooltip("点滅させるSpriteRenderer")]
+    [SerializeField]
+    private SpriteRenderer playerRenderer;
+
+    private bool isInvincible = false;
+
+
+    // ==================================================
+    // SHIELD
+    // ==================================================
+
+    [Header("シールド")]
+
+    [Tooltip("現在シールドを持っているか")]
+    [SerializeField]
+    private bool hasShield = false;
+
+    [Tooltip("シールド表示用オブジェクト")]
+    [SerializeField]
+    private GameObject shieldObject;
+
+
+    // ==================================================
+    // ダメージSE
+    // ==================================================
+
+    [Header("ダメージSE")]
+
+    [SerializeField]
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private AudioClip damageSE;
+
+    [SerializeField, Range(0f, 1f)]
+    private float damageSEVolume = 1f;
+
+
+    // ==================================================
+    // 状態
+    // ==================================================
+
+    private bool isDead = false;
+
+
+    // ==================================================
+    // 他スクリプト
+    // ==================================================
 
     private PlayerKeyMover playerKeyMover;
 
+
+    // ==================================================
+    // プロパティ
+    // ==================================================
+
+    public int MaxHearts
+    {
+        get
+        {
+            return maxHearts;
+        }
+    }
+
+
+    public int CurrentHearts
+    {
+        get
+        {
+            return currentHearts;
+        }
+    }
+
+
+    public bool IsDead
+    {
+        get
+        {
+            return isDead;
+        }
+    }
+
+
+    public bool IsInvincible
+    {
+        get
+        {
+            return isInvincible;
+        }
+    }
+
+
+    public bool HasShield
+    {
+        get
+        {
+            return hasShield;
+        }
+    }
+
+
+    // ==================================================
+    // Unity
+    // ==================================================
+
     private void Awake()
     {
-        currentHearts = maxHearts;
-        playerKeyMover = GetComponent<PlayerKeyMover>();
+        currentHearts =
+            maxHearts;
+
+
+        playerKeyMover =
+            GetComponent<PlayerKeyMover>();
+
+
+        if (playerRenderer == null)
+        {
+            playerRenderer =
+                GetComponent<SpriteRenderer>();
+        }
+
+
+        // 開始時はシールドなし
+        hasShield =
+            false;
+
+
+        UpdateShieldVisual();
     }
+
 
     private void Start()
     {
         UpdateHeartUI();
     }
 
-    public void TakeDamage(int damage)
+
+    // ==================================================
+    // ダメージ
+    // ==================================================
+
+    public void TakeDamage(
+        int damage
+    )
     {
-        // 移動中は被弾しない
-        if (playerKeyMover != null && playerKeyMover.isMoving)
+        // ==========================================
+        // 死亡中
+        // ==========================================
+
+        if (isDead)
         {
             return;
         }
 
-        if (isDead || isInvincible)
+
+        // ==========================================
+        // 移動中
+        // ==========================================
+
+        if (
+            playerKeyMover != null &&
+            playerKeyMover.isMoving
+        )
         {
             return;
         }
 
-        currentHearts -= damage;
-        currentHearts = Mathf.Clamp(currentHearts, 0, maxHearts);
 
-        if (audioSource != null && damageSE != null)
+        // ==========================================
+        // 無敵中
+        // ==========================================
+
+        if (isInvincible)
         {
-            audioSource.PlayOneShot(damageSE, damageSEVolume);
+            return;
         }
+
+
+        // ==========================================
+        // 無効なダメージ
+        // ==========================================
+
+        if (damage <= 0)
+        {
+            return;
+        }
+
+
+        // ==========================================
+        // SHIELD
+        // ==========================================
+
+        if (hasShield)
+        {
+            UseShield();
+
+            return;
+        }
+
+
+        // ==========================================
+        // HP減少
+        // ==========================================
+
+        currentHearts -=
+            damage;
+
+
+        currentHearts =
+            Mathf.Clamp(
+                currentHearts,
+                0,
+                maxHearts
+            );
+
+
+        // ==========================================
+        // ダメージSE
+        // ==========================================
+
+        PlayDamageSE();
+
+
+        // ==========================================
+        // カメラシェイク
+        // ==========================================
 
         if (CameraShake.Instance != null)
         {
-            CameraShake.Instance.Shake();
+            CameraShake.Instance
+                .Shake();
         }
+
+
+        // ==========================================
+        // コンボリセット
+        // ==========================================
 
         if (ComboManager.Instance != null)
         {
-            ComboManager.Instance.ResetCombo();
+            ComboManager.Instance
+                .ResetCombo();
         }
 
+
+        // ==========================================
+        // HP表示更新
+        // ==========================================
+
         UpdateHeartUI();
+
+
+        Debug.Log(
+            "プレイヤー被弾：" +
+            currentHearts +
+            " / " +
+            maxHearts
+        );
+
+
+        // ==========================================
+        // 死亡
+        // ==========================================
 
         if (currentHearts <= 0)
         {
             Die();
+
             return;
         }
 
-        StartCoroutine(InvincibleRoutine());
+
+        // ==========================================
+        // 被弾後無敵
+        // ==========================================
+
+        StartCoroutine(
+            InvincibleRoutine()
+        );
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (!collision.CompareTag("Bullet"))
-        {
-            return;
-        }
 
-        TakeDamage(1);
-        Destroy(collision.gameObject);
-    }
+    // ==================================================
+    // HEAL
+    // PlayerKeyMoverから呼ばれる
+    // ==================================================
 
-    public void Heal(int amount)
+    public void Heal(
+        int amount
+    )
     {
         if (isDead)
         {
             return;
         }
 
-        currentHearts += amount;
-        currentHearts = Mathf.Clamp(
-            currentHearts,
-            0,
+
+        if (amount <= 0)
+        {
+            return;
+        }
+
+
+        if (currentHearts >= maxHearts)
+        {
+            return;
+        }
+
+
+        currentHearts +=
+            amount;
+
+
+        currentHearts =
+            Mathf.Clamp(
+                currentHearts,
+                0,
+                maxHearts
+            );
+
+
+        UpdateHeartUI();
+
+
+        Debug.Log(
+            "HEAL：" +
+            currentHearts +
+            " / " +
             maxHearts
         );
+    }
+
+
+    // ==================================================
+    // 全回復
+    // ==================================================
+
+    public void FullHeal()
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+
+        currentHearts =
+            maxHearts;
+
 
         UpdateHeartUI();
     }
 
-    private void Die()
+
+    // ==================================================
+    // SHIELD
+    // PlayerKeyMoverから呼ばれる
+    // ==================================================
+
+    public void AddShield()
     {
-        isDead = true;
-
-        Debug.Log("プレイヤー死亡");
-
-        if (GameManager.Instance != null)
+        if (isDead)
         {
-            GameManager.Instance.GameOver();
+            return;
         }
+
+
+        // シールドは1枚まで
+        if (hasShield)
+        {
+            return;
+        }
+
+
+        hasShield =
+            true;
+
+
+        UpdateShieldVisual();
+
+
+        Debug.Log(
+            "SHIELD：シールド獲得"
+        );
     }
+
+
+    // ==================================================
+    // シールド使用
+    // ==================================================
+
+    private void UseShield()
+    {
+        hasShield =
+            false;
+
+
+        UpdateShieldVisual();
+
+
+        Debug.Log(
+            "SHIELD：ダメージを無効化"
+        );
+    }
+
+
+    // ==================================================
+    // シールド表示
+    // ==================================================
+
+    private void UpdateShieldVisual()
+    {
+        if (shieldObject == null)
+        {
+            return;
+        }
+
+
+        shieldObject.SetActive(
+            hasShield
+        );
+    }
+
+
+    // ==================================================
+    // 被弾後無敵
+    // ==================================================
 
     private IEnumerator InvincibleRoutine()
     {
-        isInvincible = true;
+        isInvincible =
+            true;
 
-        float timer = 0f;
-        const float blinkInterval = 0.1f;
+
+        float timer =
+            0f;
+
 
         while (timer < invincibleTime)
         {
+            // 非表示
             if (playerRenderer != null)
             {
-                playerRenderer.enabled = !playerRenderer.enabled;
+                playerRenderer.enabled =
+                    false;
             }
 
-            yield return new WaitForSeconds(blinkInterval);
-            timer += blinkInterval;
+
+            yield return new WaitForSeconds(
+                blinkInterval
+            );
+
+
+            timer +=
+                blinkInterval;
+
+
+            // 表示
+            if (playerRenderer != null)
+            {
+                playerRenderer.enabled =
+                    true;
+            }
+
+
+            yield return new WaitForSeconds(
+                blinkInterval
+            );
+
+
+            timer +=
+                blinkInterval;
         }
 
+
+        // 最後は必ず表示
         if (playerRenderer != null)
         {
-            playerRenderer.enabled = true;
+            playerRenderer.enabled =
+                true;
         }
 
-        isInvincible = false;
+
+        isInvincible =
+            false;
     }
+
+
+    // ==================================================
+    // ダメージSE
+    // ==================================================
+
+    private void PlayDamageSE()
+    {
+        if (
+            audioSource == null ||
+            damageSE == null
+        )
+        {
+            return;
+        }
+
+
+        audioSource.PlayOneShot(
+            damageSE,
+            damageSEVolume
+        );
+    }
+
+
+    // ==================================================
+    // HeartUI
+    // ==================================================
 
     private void UpdateHeartUI()
     {
-        if (HeartUI.Instance != null)
+        if (HeartUI.Instance == null)
         {
-            HeartUI.Instance.UpdateHearts(currentHearts, maxHearts);
+            return;
         }
+
+
+        HeartUI.Instance.UpdateHearts(
+            currentHearts,
+            maxHearts
+        );
+    }
+
+
+    // ==================================================
+    // 死亡
+    // ==================================================
+
+    private void Die()
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+
+        isDead =
+            true;
+
+
+        isInvincible =
+            false;
+
+
+        // ==========================================
+        // シールド解除
+        // ==========================================
+
+        hasShield =
+            false;
+
+
+        UpdateShieldVisual();
+
+
+        // ==========================================
+        // 点滅途中だった場合に表示を戻す
+        // ==========================================
+
+        if (playerRenderer != null)
+        {
+            playerRenderer.enabled =
+                true;
+        }
+
+
+        Debug.Log(
+            "プレイヤー死亡"
+        );
+
+
+        // ==========================================
+        // GameOver
+        // ==========================================
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance
+                .GameOver();
+        }
+    }
+
+
+    // ==================================================
+    // Bullet
+    // ==================================================
+
+    private void OnTriggerEnter2D(
+        Collider2D collision
+    )
+    {
+        if (collision == null)
+        {
+            return;
+        }
+
+
+        // Bullet以外
+        if (!collision.CompareTag("Bullet"))
+        {
+            return;
+        }
+
+
+        // ==========================================
+        // 移動中
+        // ==========================================
+        //
+        // PlayerKeyMoverでCollider自体も
+        // 無効化していますが念のため判定。
+        //
+        // 移動中なら弾も消さない。
+        // ==========================================
+
+        if (
+            playerKeyMover != null &&
+            playerKeyMover.isMoving
+        )
+        {
+            return;
+        }
+
+
+        // ==========================================
+        // ダメージ
+        // ==========================================
+
+        TakeDamage(
+            1
+        );
+
+
+        // ==========================================
+        // 弾を削除
+        // ==========================================
+
+        Destroy(
+            collision.gameObject
+        );
     }
 }
