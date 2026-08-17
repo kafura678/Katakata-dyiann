@@ -20,4 +20,9 @@ public class bossFireTimer
         }
         return false;
     }
+
+    public void reset()
+    {
+        elapsedTime = 0f;
+    }
 }

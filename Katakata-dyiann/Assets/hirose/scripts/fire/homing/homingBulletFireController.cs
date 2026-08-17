@@ -9,6 +9,7 @@ public class homingBulletFireController : MonoBehaviour
     [SerializeField] float sideWeight = 1f;
     [SerializeField] float startVelocityValue = 2f;
     [SerializeField] float period = 1f;
+    [SerializeField, Range(0f, 1f)] float homingRate = 0.6f;
 
     fireService fireServiceRf;
 
@@ -17,6 +18,7 @@ public class homingBulletFireController : MonoBehaviour
         fireServiceRf = new fireService();
 
         period = Mathf.Max(0.1f, period);
+        homingRate = Mathf.Clamp01(homingRate);
     }
 
     public void homingBulletsFire(Transform bossTf, Transform playerTf, int fireCount)
@@ -30,10 +32,10 @@ public class homingBulletFireController : MonoBehaviour
     public void homingBulletFire(Transform bossTf, Transform playerTf)
     {
         GameObject generatedBulletObj = Instantiate(originalBulletObj, bulletParentTf);
-        generatedBulletObj.transform.localPosition = bossTf.localPosition;
+        generatedBulletObj.transform.position = bossTf.position;
 
         homingBullet generatedBullet = generatedBulletObj.GetComponent<homingBullet>();
-        generatedBullet.homingBulletSet(playerTf, fireServiceRf.homingBulletStartVelocity(bossTf.localPosition, playerTf.localPosition, backWeight, sideWeight) * startVelocityValue, period);
+        generatedBullet.homingBulletSet(playerTf, fireServiceRf.homingBulletStartVelocity(bossTf.position, playerTf.position, backWeight, sideWeight) * startVelocityValue, period, homingRate);
 
         Destroy(generatedBulletObj, period);
     }

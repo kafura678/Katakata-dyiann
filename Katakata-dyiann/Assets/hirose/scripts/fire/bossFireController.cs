@@ -31,7 +31,7 @@ public class bossFireController : MonoBehaviour
         generatedBulletObj.transform.localPosition = fireServiceRf.circleFirePosGet(bossTf.localPosition, fireRotateSpeed, rotateValue);
 
         bullet generatedBullet = generatedBulletObj.GetComponent<bullet>();
-        generatedBullet.moveSet(bulletSpeed, (generatedBulletObj.transform.localPosition - bossTf.localPosition).normalized);
+        generatedBullet.moveSet(bulletSpeed, (generatedBulletObj.transform.position - bossTf.position).normalized);
 
         Destroy(generatedBulletObj, 5f);
     }
