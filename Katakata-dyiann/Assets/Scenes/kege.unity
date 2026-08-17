@@ -149,10 +149,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowManager
   flowGauge: 0
-  maxFlowGauge: 100
-  flowGainPerHit: 5
+  maxFlowGauge: 5
+  flowGainPerHit: 1
   isFlowMode: 0
-  flowDuration: 5
+  flowDuration: 10
   requiredAttackCount: 1
   isUltimateReady: 0
   isUltimatePlaying: 0
@@ -582,6 +582,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: allParent
       objectReference: {fileID: 0}
+    - target: {fileID: 5414524006304414134, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: bulletFireInterval
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 6728844590782764593, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
       propertyPath: playerTf
       value: 
@@ -994,7 +998,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c40120af2ffa437a946a591d51cffe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  hp: 1500
+  maxHp: 3000
+  damagePopupPrefab: {fileID: 2738817509264179469, guid: 202d2ca1748724087b5637c669e39d75, type: 3}
+  explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
+  explosionOffset: {x: 0, y: 0, z: 0}
 --- !u!61 &285227295
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1843,7 +1850,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c40120af2ffa437a946a591d51cffe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  hp: 1300
+  maxHp: 3000
+  damagePopupPrefab: {fileID: 2738817509264179469, guid: 202d2ca1748724087b5637c669e39d75, type: 3}
+  explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
+  explosionOffset: {x: 0, y: 0, z: 0}
 --- !u!61 &522753096
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1878,7 +1888,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.21133333}
+  m_Offset: {x: 0.0043336824, y: -0.0010176897}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1888,7 +1898,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.48862404, y: 0.29794157}
   m_EdgeRadius: 0
 --- !u!50 &522753097
 Rigidbody2D:
@@ -2672,6 +2682,7 @@ MonoBehaviour:
   comboResetTime: 2
   damageBonusPerCombo: 0.01
   maxDamageMultiplier: 1.5
+  maxDamage: 100
   baseScorePerHit: 100
   comboText: {fileID: 422737200}
   comboTimerText: {fileID: 18748018}
@@ -4485,14 +4496,20 @@ MonoBehaviour:
   slashWidth: 0.4
   baseDamage: 1
   distanceDamageRate: 0.5
+  minimumRandomDamageRate: 0.9
+  maximumRandomDamageRate: 1.1
   slashLine: {fileID: 533974692}
   slashLineTime: 0.08
+  slashEffectPrefab: {fileID: 0}
+  slashEffectAngleOffset: 0
   afterImagePrefab: {fileID: 5078891719955181059, guid: e684418b1d3de473cb3c0edc2985d913, type: 3}
   afterImageCount: 4
   afterImageLifeTime: 0.2
   audioSource: {fileID: 1813944314}
   moveSE: {fileID: 8300000, guid: 62e8c07cbc845413aa6b40331d84fc72, type: 3}
   moveSEVolume: 0.3
+  slashSE: {fileID: 0}
+  slashSEVolume: 1
   wordCommands:
   - word: HEAL
     commandType: 0
@@ -4508,9 +4525,17 @@ MonoBehaviour:
   beamDamage: 30
   beamChargeTime: 1
   beamLifeTime: 2
-  beamSideDistance: 2
+  beamDamageInterval: 0.1
+  beamSideDistance: 5
   beamPositionMoveDuration: 0.1
   beamAngleOffset: 0
+  beamSpawnOffset: {x: 0, y: 0}
+  beamEndSprites: []
+  beamEndFrameInterval: 0.05
+  beamSE: {fileID: 0}
+  beamSEVolume: 1
+  beamHitSE: {fileID: 0}
+  beamHitSEVolume: 1
 --- !u!50 &1813944311
 Rigidbody2D:
   serializedVersion: 5
@@ -4590,11 +4615,23 @@ MonoBehaviour:
   invincibleTime: 1
   blinkInterval: 0.1
   playerRenderer: {fileID: 1813944307}
-  hasShield: 0
-  shieldObject: {fileID: 1820768038}
+  maxShieldHealth: 3
+  shieldRenderer1: {fileID: 0}
+  shieldRenderer2: {fileID: 0}
+  shieldBlue: {r: 0, g: 0, b: 1, a: 1}
+  shieldYellow: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  shieldRed: {r: 1, g: 0, b: 0, a: 1}
+  shieldAlpha1: 1
+  shieldAlpha2: 0.5
   audioSource: {fileID: 1813944314}
   damageSE: {fileID: 8300000, guid: f0786fc7b46fb4e7188d386e21d2dc2a, type: 3}
   damageSEVolume: 1
+  healSE: {fileID: 0}
+  healSEVolume: 1
+  shieldGetSE: {fileID: 0}
+  shieldGetSEVolume: 1
+  explosionEffectPrefab: {fileID: 0}
+  playerColliders: []
 --- !u!82 &1813944314
 AudioSource:
   m_ObjectHideFlags: 0

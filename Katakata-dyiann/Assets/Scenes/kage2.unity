@@ -150,9 +150,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlowManager
   flowGauge: 0
   maxFlowGauge: 100
-  flowGainPerHit: 100
+  flowGainPerHit: 1
   isFlowMode: 0
-  flowDuration: 5
+  flowDuration: 10
   requiredAttackCount: 1
   isUltimateReady: 0
   isUltimatePlaying: 0
@@ -582,6 +582,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: allParent
       objectReference: {fileID: 0}
+    - target: {fileID: 5414524006304414134, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: bulletFireInterval
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6728844590782764593, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: duration
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6728844590782764593, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
       propertyPath: playerTf
       value: 
@@ -608,6 +616,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6811259993040316418, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
       propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827917707104830004, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: arrivalDistance
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8294203200266678204, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
@@ -5804,7 +5816,7 @@ MonoBehaviour:
   sideWeight: 3
   startVelocityValue: 50
   period: 1
-  homingRate: 0.6
+  homingRate: 0.3
 --- !u!4 &2103445785
 Transform:
   m_ObjectHideFlags: 0
