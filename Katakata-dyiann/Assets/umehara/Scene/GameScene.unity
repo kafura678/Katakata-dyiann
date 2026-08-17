@@ -1647,8 +1647,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c40120af2ffa437a946a591d51cffe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  hp: 1300
+  maxHp: 100
+  damagePopupPrefab: {fileID: 2738817509264179469, guid: 202d2ca1748724087b5637c669e39d75, type: 3}
   explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
+  explosionOffset: {x: 0, y: 0, z: 0}
 --- !u!61 &522753096
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1683,7 +1685,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.21133333}
+  m_Offset: {x: -0.000000022351742, y: -0.0015822202}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1693,7 +1695,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.38491088, y: 0.24296701}
   m_EdgeRadius: 0
 --- !u!50 &522753097
 Rigidbody2D:
@@ -4316,6 +4318,9 @@ MonoBehaviour:
   beamSideDistance: 2
   beamPositionMoveDuration: 0.1
   beamAngleOffset: 0
+  beamSpawnOffset: {x: 0, y: 0}
+  beamSE: {fileID: 0}
+  beamSEVolume: 1
 --- !u!50 &1813944311
 Rigidbody2D:
   serializedVersion: 5
