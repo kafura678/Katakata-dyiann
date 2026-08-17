@@ -153,12 +153,12 @@ MonoBehaviour:
   flowGainPerHit: 5
   isFlowMode: 0
   flowDuration: 5
-  requiredAttackCount: 8
+  requiredAttackCount: 1
   isUltimateReady: 0
   isUltimatePlaying: 0
   enemySlowRate: 0.3
-  flowGaugeSlider: {fileID: 1036713722}
-  flowText: {fileID: 1438412369}
+  stopEnemyShooting: 1
+  player: {fileID: 1813944310}
 --- !u!4 &8877812
 Transform:
   m_ObjectHideFlags: 0
@@ -3958,7 +3958,7 @@ SpriteRenderer:
   m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: -6470460504253458178, guid: 7a0c14e7622594b7bab0e03c9ee3e221, type: 3}
-  m_Color: {r: 0, g: 0.65196705, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -4077,16 +4077,25 @@ MonoBehaviour:
   afterImagePrefab: {fileID: 5078891719955181059, guid: e684418b1d3de473cb3c0edc2985d913, type: 3}
   afterImageCount: 4
   afterImageLifeTime: 0.2
-  keepAfterImageInFlow: 1
   audioSource: {fileID: 1813944314}
   moveSE: {fileID: 8300000, guid: 62e8c07cbc845413aa6b40331d84fc72, type: 3}
   moveSEVolume: 0.3
   wordCommands:
   - word: HEAL
     commandType: 0
-  ultimateMoveDuration: 0.03
-  ultimateDamageMultiplier: 2
-  ultimateStepWait: 0.02
+  bossTarget: {fileID: 0}
+  ultimateRushCount: 8
+  ultimateRushDamage: 4
+  ultimateRushMoveDuration: 0.05
+  ultimateRushRadius: 2
+  ultimateRushInterval: 0.1
+  beamPrefab: {fileID: 5549476909035006902, guid: 94d25ead73d5f4e3db2183b9ca87c267, type: 3}
+  beamDamage: 30
+  beamChargeTime: 1
+  beamLifeTime: 2
+  beamSideDistance: 2
+  beamPositionMoveDuration: 0.1
+  beamAngleOffset: 0
 --- !u!50 &1813944311
 Rigidbody2D:
   serializedVersion: 5
