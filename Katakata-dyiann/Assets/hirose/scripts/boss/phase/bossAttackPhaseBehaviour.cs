@@ -6,6 +6,7 @@ public abstract class bossAttackPhaseBehaviour : MonoBehaviour, bossAttackPhase
 
     bossAttackPhaseTimer phaseTimer;
     bool isRunning;
+    bool isPaused;
 
     public bool isCompleted => isRunning && phaseTimer != null && phaseTimer.isCompleted;
     public bool isAvailable => isActiveAndEnabled;
@@ -25,18 +26,41 @@ public abstract class bossAttackPhaseBehaviour : MonoBehaviour, bossAttackPhase
         ensureTimer();
         phaseTimer.reset();
         isRunning = true;
+        isPaused = false;
         onEnter();
     }
 
     public void updatePhase(float deltaTime)
     {
-        if (!isRunning || deltaTime <= 0f)
+        if (!isRunning || isPaused || deltaTime <= 0f)
         {
             return;
         }
 
         onUpdatePhase(deltaTime);
         phaseTimer.tick(deltaTime);
+    }
+
+    public void pause()
+    {
+        if (!isRunning || isPaused)
+        {
+            return;
+        }
+
+        isPaused = true;
+        onPause();
+    }
+
+    public void resume()
+    {
+        if (!isRunning || !isPaused)
+        {
+            return;
+        }
+
+        isPaused = false;
+        onResume();
     }
 
     public void exit()
@@ -48,12 +72,15 @@ public abstract class bossAttackPhaseBehaviour : MonoBehaviour, bossAttackPhase
 
         onExit();
         isRunning = false;
+        isPaused = false;
         phaseTimer.reset();
     }
 
     protected abstract void onEnter();
     protected abstract void onUpdatePhase(float deltaTime);
     protected abstract void onExit();
+    protected virtual void onPause() { }
+    protected virtual void onResume() { }
 
     void ensureTimer()
     {

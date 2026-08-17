@@ -5,6 +5,7 @@ public class boss : MonoBehaviour
 {
     [SerializeField] bossNormalAttackPhase normalAttackPhase;
     [SerializeField] List<bossSpecialAttackPhase> specialAttackPhases = new List<bossSpecialAttackPhase>();
+    [SerializeField] bossFlowModePauseCondition flowModePauseCondition;
 
     bossAttackPhaseController attackPhaseController;
     bool hasStarted;
@@ -33,7 +34,15 @@ public class boss : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isDefeated || Time.timeScale <= 0f)
+        if (isDefeated)
+        {
+            return;
+        }
+
+        bool shouldPause = flowModePauseCondition != null && flowModePauseCondition.isPauseRequested;
+        attackPhaseController.setPaused(shouldPause);
+
+        if (Time.timeScale <= 0f)
         {
             return;
         }

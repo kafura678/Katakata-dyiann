@@ -5,6 +5,7 @@ public class bossAttackPhaseController
 
     bossAttackPhase currentPhase;
     bool isRunning;
+    bool isPaused;
 
     public bossAttackPhaseController(
         bossNormalAttackPhase normalAttackPhase,
@@ -22,12 +23,13 @@ public class bossAttackPhaseController
         }
 
         isRunning = true;
+        isPaused = false;
         changePhase(normalAttackPhase);
     }
 
     public void updatePhase(float deltaTime)
     {
-        if (!isRunning || currentPhase == null || deltaTime <= 0f)
+        if (!isRunning || isPaused || currentPhase == null || deltaTime <= 0f)
         {
             return;
         }
@@ -40,6 +42,23 @@ public class bossAttackPhaseController
         }
     }
 
+    public void setPaused(bool shouldPause)
+    {
+        if (!isRunning || isPaused == shouldPause)
+        {
+            return;
+        }
+
+        isPaused = shouldPause;
+        if (isPaused)
+        {
+            currentPhase?.pause();
+            return;
+        }
+
+        currentPhase?.resume();
+    }
+
     public void end()
     {
         if (!isRunning)
@@ -50,6 +69,7 @@ public class bossAttackPhaseController
         currentPhase?.exit();
         currentPhase = null;
         isRunning = false;
+        isPaused = false;
     }
 
     void moveToNextPhase()

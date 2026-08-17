@@ -5,5 +5,7 @@ public interface bossAttackPhase
 
     void enter();
     void updatePhase(float deltaTime);
+    void pause();
+    void resume();
     void exit();
 }

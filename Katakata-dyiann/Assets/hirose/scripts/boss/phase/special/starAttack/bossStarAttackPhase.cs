@@ -43,6 +43,16 @@ public class bossStarAttackPhase : bossSpecialAttackPhase
         fireTimer?.reset();
     }
 
+    protected override void onPause()
+    {
+        targetTfsRotation?.stop();
+    }
+
+    protected override void onResume()
+    {
+        targetTfsRotation?.begin();
+    }
+
     void ensureFireTimer()
     {
         if (fireTimer == null)
