@@ -3,37 +3,88 @@ using UnityEngine.UI;
 
 public class ResultUI : MonoBehaviour
 {
+    // ==================================================
+    // UI
+    // ==================================================
+
     [Header("Texts")]
-    public Text resultTitleText;
-    public Text clearTimeText;
-    public Text scoreText;
-    public Text defeatedCountText;
+
+    [SerializeField]
+    private Text resultTitleText;
+
+    [SerializeField]
+    private Text scoreText;
+
+    [SerializeField]
+    private Text maxComboText;
+
+
+    // ==================================================
+    // Unity
+    // ==================================================
 
     private void Start()
     {
         ShowResult();
     }
 
+
+    // ==================================================
+    // リザルト表示
+    // ==================================================
+
     private void ShowResult()
     {
-        if (resultTitleText != null)
+        // ==========================================
+        // GameManager確認
+        // ==========================================
+
+        if (GameManager.Instance == null)
         {
-            resultTitleText.text = ResultData.isClear ? "GAME CLEAR" : "GAME OVER";
+            Debug.LogError(
+                "GameManagerが見つかりません"
+            );
+
+            return;
         }
 
-        if (clearTimeText != null)
+
+        // ==========================================
+        // GAME CLEAR / GAME OVER
+        // ==========================================
+
+        if (resultTitleText != null)
         {
-            clearTimeText.text = "TIME : " + ResultData.clearTime.ToString("F2");
+            resultTitleText.text =
+                GameManager.Instance.ResultIsClear
+                ?
+                "GAME CLEAR"
+                :
+                "GAME OVER";
         }
+
+
+        // ==========================================
+        // SCORE
+        // ==========================================
 
         if (scoreText != null)
         {
-            scoreText.text = "SCORE : " + ResultData.score;
+            scoreText.text =
+                "SCORE : " +
+                GameManager.Instance.ResultScore;
         }
 
-        if (defeatedCountText != null)
+
+        // ==========================================
+        // MAX COMBO
+        // ==========================================
+
+        if (maxComboText != null)
         {
-            defeatedCountText.text = "DEFEAT : " + ResultData.defeatedEnemyCount;
+            maxComboText.text =
+                "MAX COMBO : " +
+                GameManager.Instance.ResultMaxCombo;
         }
     }
 }

@@ -13,170 +13,188 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField]
     private int maxHearts = 3;
 
+    [Tooltip("現在のハート数")]
+    [SerializeField]
     private int currentHearts;
 
 
     // ==================================================
-    // 被弾後の無敵
+    // 被弾後無敵
     // ==================================================
 
-    [Header("被弾後の無敵")]
+    [Header("被弾後無敵")]
 
-    [Tooltip("被弾後の無敵時間")]
+    [Tooltip("ダメージを受けた後の無敵時間")]
     [SerializeField]
     private float invincibleTime = 1f;
 
-    [Tooltip("点滅する間隔")]
+    [Tooltip("無敵中の点滅間隔")]
     [SerializeField]
     private float blinkInterval = 0.1f;
+
+
+    // ==================================================
+    // プレイヤー表示
+    // ==================================================
+
+    [Header("プレイヤー表示")]
 
     [Tooltip("点滅させるSpriteRenderer")]
     [SerializeField]
     private SpriteRenderer playerRenderer;
 
-    private bool isInvincible = false;
-
 
     // ==================================================
-    // SHIELD
+    // シールド
     // ==================================================
 
     [Header("シールド")]
 
-    [Tooltip("シールドの最大耐久")]
+    [Tooltip("シールド最大耐久")]
     [SerializeField]
     private int maxShieldHealth = 3;
 
+    [Tooltip("現在のシールド耐久")]
+    [SerializeField]
     private int shieldHealth = 0;
 
 
     // ==================================================
-    // シールド画像
+    // シールド表示
     // ==================================================
 
-    [Header("シールド画像")]
+    [Header("シールド表示")]
 
-    [Tooltip("シールド画像1")]
+    [Tooltip("シールド表示1")]
     [SerializeField]
     private SpriteRenderer shieldRenderer1;
 
-    [Tooltip("シールド画像2")]
+    [Tooltip("シールド表示2")]
     [SerializeField]
     private SpriteRenderer shieldRenderer2;
 
 
-    // ==================================================
-    // シールド色
-    // ==================================================
-
     [Header("シールド色")]
 
-    [Tooltip("耐久3の色")]
+    [Tooltip("シールド3の時")]
     [SerializeField]
-    private Color shieldBlue = Color.blue;
+    private Color shieldColor3 = Color.blue;
 
-    [Tooltip("耐久2の色")]
+    [Tooltip("シールド2の時")]
     [SerializeField]
-    private Color shieldYellow = Color.yellow;
+    private Color shieldColor2 = Color.yellow;
 
-    [Tooltip("耐久1の色")]
+    [Tooltip("シールド1の時")]
     [SerializeField]
-    private Color shieldRed = Color.red;
+    private Color shieldColor1 = Color.red;
 
-
-    // ==================================================
-    // シールド透明度
-    // ==================================================
-
-    [Header("シールド透明度")]
-
-    [Tooltip("シールド画像1の透明度")]
-    [SerializeField, Range(0f, 1f)]
-    private float shieldAlpha1 = 1f;
-
-    [Tooltip("シールド画像2の透明度")]
-    [SerializeField, Range(0f, 1f)]
-    private float shieldAlpha2 = 0.5f;
-
-
-    // ==================================================
-    // AudioSource
-    // ==================================================
-
-    [Header("SE共通")]
-
-    [Tooltip("SE再生用AudioSource")]
+    [Tooltip("シールドの透明度")]
+    [Range(0f, 1f)]
     [SerializeField]
-    private AudioSource audioSource;
-
-
-    // ==================================================
-    // ダメージSE
-    // ==================================================
-
-    [Header("ダメージSE")]
-
-    [SerializeField]
-    private AudioClip damageSE;
-
-    [SerializeField, Range(0f, 1f)]
-    private float damageSEVolume = 1f;
-
-
-    // ==================================================
-    // HEAL SE
-    // ==================================================
-
-    [Header("HP回復SE")]
-
-    [Tooltip("HP回復成功時のSE")]
-    [SerializeField]
-    private AudioClip healSE;
-
-    [SerializeField, Range(0f, 1f)]
-    private float healSEVolume = 1f;
-
-
-    // ==================================================
-    // SHIELD SE
-    // ==================================================
-
-    [Header("シールド獲得SE")]
-
-    [Tooltip("シールド獲得時のSE")]
-    [SerializeField]
-    private AudioClip shieldGetSE;
-
-    [SerializeField, Range(0f, 1f)]
-    private float shieldGetSEVolume = 1f;
-
-
-    // ==================================================
-    // 死亡エフェクト
-    // ==================================================
-
-    [Header("死亡エフェクト")]
-
-    [Tooltip("死亡時に生成する爆発Prefab")]
-    [SerializeField]
-    private GameObject explosionEffectPrefab;
+    private float shieldAlpha = 0.5f;
 
 
     // ==================================================
     // Collider
     // ==================================================
 
-    [Header("死亡時に無効化する当たり判定")]
+    [Header("プレイヤー当たり判定")]
 
+    [Tooltip("死亡時に無効化するCollider")]
     [SerializeField]
     private Collider2D[] playerColliders;
 
 
     // ==================================================
-    // 状態
+    // 爆発
     // ==================================================
 
-    private bool isDead = false;
+    [Header("最終爆発")]
+
+    [Tooltip("死亡演出の最後に生成する爆発Prefab")]
+    [SerializeField]
+    private GameObject explosionEffectPrefab;
+
+    [Tooltip("最終爆発位置の補正")]
+    [SerializeField]
+    private Vector3 explosionOffset = Vector3.zero;
+
+
+    // ==================================================
+    // 死亡演出
+    // ==================================================
+
+    [Header("死亡演出")]
+
+    [Tooltip("死亡演出の長さ")]
+    [SerializeField]
+    private float deathEffectDuration = 2f;
+
+    [Tooltip("死亡中の震え幅")]
+    [SerializeField]
+    private float deathShakeAmount = 0.08f;
+
+
+    // ==================================================
+    // 死亡中の連続爆発
+    // ==================================================
+
+    [Header("死亡時の連続爆発")]
+
+    [Tooltip(
+        "死亡中に周囲で生成する爆発Prefab。" +
+        "未設定ならExplosion Effect Prefabを使用"
+    )]
+    [SerializeField]
+    private GameObject randomExplosionEffectPrefab;
+
+    [Tooltip("ランダム爆発の間隔")]
+    [SerializeField]
+    private float randomExplosionInterval = 0.15f;
+
+    [Tooltip("ランダム爆発が出る範囲")]
+    [SerializeField]
+    private float randomExplosionRadius = 1.2f;
+
+
+    // ==================================================
+    // SE
+    // ==================================================
+
+    [Header("SE共通")]
+
+    [SerializeField]
+    private AudioSource audioSource;
+
+
+    [Header("ダメージSE")]
+
+    [SerializeField]
+    private AudioClip damageSE;
+
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float damageSEVolume = 1f;
+
+
+    [Header("回復SE")]
+
+    [SerializeField]
+    private AudioClip healSE;
+
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float healSEVolume = 1f;
+
+
+    [Header("シールド取得SE")]
+
+    [SerializeField]
+    private AudioClip shieldGetSE;
+
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float shieldGetSEVolume = 1f;
 
 
     // ==================================================
@@ -187,61 +205,27 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // プロパティ
+    // 状態
     // ==================================================
 
-    public int MaxHearts
-    {
-        get
-        {
-            return maxHearts;
-        }
-    }
+    private bool isInvincible = false;
+
+    private bool isDead = false;
 
 
-    public int CurrentHearts
-    {
-        get
-        {
-            return currentHearts;
-        }
-    }
+    // ==================================================
+    // 外部参照
+    // ==================================================
 
+    public int CurrentHearts => currentHearts;
 
-    public bool IsDead
-    {
-        get
-        {
-            return isDead;
-        }
-    }
+    public int MaxHearts => maxHearts;
 
+    public int ShieldHealth => shieldHealth;
 
-    public bool IsInvincible
-    {
-        get
-        {
-            return isInvincible;
-        }
-    }
+    public bool IsInvincible => isInvincible;
 
-
-    public bool HasShield
-    {
-        get
-        {
-            return shieldHealth > 0;
-        }
-    }
-
-
-    public int ShieldHealth
-    {
-        get
-        {
-            return shieldHealth;
-        }
-    }
+    public bool IsDead => isDead;
 
 
     // ==================================================
@@ -250,31 +234,27 @@ public class PlayerHealth : MonoBehaviour
 
     private void Awake()
     {
+        // ==========================================
+        // HP初期化
+        // ==========================================
+
         currentHearts =
             maxHearts;
 
 
-        shieldHealth =
-            0;
-
-
-        playerKeyMover =
-            GetComponent<PlayerKeyMover>();
-
-
         // ==========================================
-        // SpriteRenderer自動取得
+        // Renderer
         // ==========================================
 
         if (playerRenderer == null)
         {
             playerRenderer =
-                GetComponent<SpriteRenderer>();
+                GetComponentInChildren<SpriteRenderer>();
         }
 
 
         // ==========================================
-        // Collider自動取得
+        // Collider
         // ==========================================
 
         if (
@@ -288,7 +268,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // AudioSource自動取得
+        // AudioSource
         // ==========================================
 
         if (audioSource == null)
@@ -298,13 +278,29 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
-        UpdateShieldVisual();
+        // ==========================================
+        // PlayerKeyMover
+        // ==========================================
+
+        playerKeyMover =
+            GetComponent<PlayerKeyMover>();
     }
 
 
     private void Start()
     {
+        // ==========================================
+        // HP UI初期化
+        // ==========================================
+
         UpdateHeartUI();
+
+
+        // ==========================================
+        // シールド表示初期化
+        // ==========================================
+
+        UpdateShieldVisual();
     }
 
 
@@ -327,7 +323,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 移動中
+        // 移動中無敵
         // ==========================================
 
         if (
@@ -340,7 +336,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 無敵中
+        // 被弾後無敵
         // ==========================================
 
         if (isInvincible)
@@ -350,7 +346,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 無効なダメージ
+        // 無効ダメージ
         // ==========================================
 
         if (damage <= 0)
@@ -360,12 +356,30 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // SHIELD
+        // シールド
+        //
+        // 1回の攻撃を完全に防ぎ
+        // シールドを1消費
         // ==========================================
 
-        if (HasShield)
+        if (shieldHealth > 0)
         {
-            UseShield();
+            shieldHealth--;
+
+
+            UpdateShieldVisual();
+
+
+            // ======================================
+            // シールドで防いだ場合も
+            // カメラシェイク
+            // ======================================
+
+            if (CameraShake.Instance != null)
+            {
+                CameraShake.Instance.Shake();
+            }
+
 
             return;
         }
@@ -400,8 +414,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (CameraShake.Instance != null)
         {
-            CameraShake.Instance
-                .Shake();
+            CameraShake.Instance.Shake();
         }
 
 
@@ -411,24 +424,15 @@ public class PlayerHealth : MonoBehaviour
 
         if (ComboManager.Instance != null)
         {
-            ComboManager.Instance
-                .ResetCombo();
+            ComboManager.Instance.ResetCombo();
         }
 
 
         // ==========================================
-        // HP UI更新
+        // HP UI
         // ==========================================
 
         UpdateHeartUI();
-
-
-        Debug.Log(
-            "プレイヤー被弾：" +
-            currentHearts +
-            " / " +
-            maxHearts
-        );
 
 
         // ==========================================
@@ -454,92 +458,20 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // HEAL
-    // PlayerKeyMoverから呼ばれる
+    // 回復
     // ==================================================
 
     public void Heal(
         int amount
     )
     {
-        // ==========================================
-        // 死亡中
-        // ==========================================
-
         if (isDead)
         {
             return;
         }
 
-
-        // ==========================================
-        // 無効な回復量
-        // ==========================================
 
         if (amount <= 0)
-        {
-            return;
-        }
-
-
-        // ==========================================
-        // 最大HPなら回復しない
-        //
-        // この場合はSEも鳴らさない
-        // ==========================================
-
-        if (currentHearts >= maxHearts)
-        {
-            return;
-        }
-
-
-        // ==========================================
-        // HP回復
-        // ==========================================
-
-        currentHearts +=
-            amount;
-
-
-        currentHearts =
-            Mathf.Clamp(
-                currentHearts,
-                0,
-                maxHearts
-            );
-
-
-        // ==========================================
-        // UI更新
-        // ==========================================
-
-        UpdateHeartUI();
-
-
-        // ==========================================
-        // 回復SE
-        // ==========================================
-
-        PlayHealSE();
-
-
-        Debug.Log(
-            "HEAL：" +
-            currentHearts +
-            " / " +
-            maxHearts
-        );
-    }
-
-
-    // ==================================================
-    // 全回復
-    // ==================================================
-
-    public void FullHeal()
-    {
-        if (isDead)
         {
             return;
         }
@@ -555,24 +487,74 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
+        int oldHearts =
+            currentHearts;
+
+
+        currentHearts +=
+            amount;
+
+
+        currentHearts =
+            Mathf.Clamp(
+                currentHearts,
+                0,
+                maxHearts
+            );
+
+
         // ==========================================
-        // 全回復
+        // 実際に回復した場合のみSE
         // ==========================================
+
+        if (currentHearts > oldHearts)
+        {
+            PlayHealSE();
+        }
+
+
+        UpdateHeartUI();
+    }
+
+
+    // ==================================================
+    // 全回復
+    // ==================================================
+
+    public void FullHeal()
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+
+        if (currentHearts >= maxHearts)
+        {
+            return;
+        }
+
+
+        int oldHearts =
+            currentHearts;
+
 
         currentHearts =
             maxHearts;
 
 
+        if (currentHearts > oldHearts)
+        {
+            PlayHealSE();
+        }
+
+
         UpdateHeartUI();
-
-
-        PlayHealSE();
     }
 
 
     // ==================================================
-    // SHIELD獲得
-    // PlayerKeyMoverから呼ばれる
+    // シールド取得
     // ==================================================
 
     public void AddShield()
@@ -584,7 +566,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 耐久を最大まで回復
+        // シールドを最大まで回復
         // ==========================================
 
         shieldHealth =
@@ -592,58 +574,10 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 表示更新
-        // ==========================================
-
-        UpdateShieldVisual();
-
-
-        // ==========================================
-        // シールド獲得SE
+        // SE
         // ==========================================
 
         PlayShieldGetSE();
-
-
-        Debug.Log(
-            "SHIELD獲得：耐久 " +
-            shieldHealth
-        );
-    }
-
-
-    // ==================================================
-    // SHIELD使用
-    // ==================================================
-
-    private void UseShield()
-    {
-        if (shieldHealth <= 0)
-        {
-            return;
-        }
-
-
-        // ==========================================
-        // 1発分消費
-        // ==========================================
-
-        shieldHealth--;
-
-
-        shieldHealth =
-            Mathf.Clamp(
-                shieldHealth,
-                0,
-                maxShieldHealth
-            );
-
-
-        Debug.Log(
-            "SHIELDでダメージ無効：" +
-            "残り耐久 " +
-            shieldHealth
-        );
 
 
         // ==========================================
@@ -660,107 +594,105 @@ public class PlayerHealth : MonoBehaviour
 
     private void UpdateShieldVisual()
     {
-        bool isActive =
-            shieldHealth > 0;
-
-
-        // ==========================================
-        // 表示 / 非表示
-        // ==========================================
-
-        if (shieldRenderer1 != null)
-        {
-            shieldRenderer1
-                .gameObject
-                .SetActive(
-                    isActive
-                );
-        }
-
-
-        if (shieldRenderer2 != null)
-        {
-            shieldRenderer2
-                .gameObject
-                .SetActive(
-                    isActive
-                );
-        }
-
-
         // ==========================================
         // シールドなし
         // ==========================================
 
-        if (!isActive)
+        if (shieldHealth <= 0)
         {
+            SetShieldRenderer(
+                shieldRenderer1,
+                false,
+                Color.white
+            );
+
+
+            SetShieldRenderer(
+                shieldRenderer2,
+                false,
+                Color.white
+            );
+
+
             return;
         }
 
 
         // ==========================================
-        // 耐久に応じて色変更
+        // シールド色
         // ==========================================
 
-        Color currentColor;
+        Color shieldColor;
 
 
         if (shieldHealth >= 3)
         {
-            // 耐久3
-            currentColor =
-                shieldBlue;
+            shieldColor =
+                shieldColor3;
         }
         else if (shieldHealth == 2)
         {
-            // 耐久2
-            currentColor =
-                shieldYellow;
+            shieldColor =
+                shieldColor2;
         }
         else
         {
-            // 耐久1
-            currentColor =
-                shieldRed;
+            shieldColor =
+                shieldColor1;
         }
 
 
         // ==========================================
-        // シールド画像1
+        // 2枚とも表示
         // ==========================================
 
-        if (shieldRenderer1 != null)
+        SetShieldRenderer(
+            shieldRenderer1,
+            true,
+            shieldColor
+        );
+
+
+        SetShieldRenderer(
+            shieldRenderer2,
+            true,
+            shieldColor
+        );
+    }
+
+
+    // ==================================================
+    // シールドRenderer
+    // ==================================================
+
+    private void SetShieldRenderer(
+        SpriteRenderer renderer,
+        bool active,
+        Color color
+    )
+    {
+        if (renderer == null)
         {
-            Color color1 =
-                currentColor;
-
-
-            color1.a =
-                shieldAlpha1;
-
-
-            shieldRenderer1.color =
-                color1;
+            return;
         }
 
 
-        // ==========================================
-        // シールド画像2
-        // ==========================================
+        renderer.enabled =
+            active;
 
-        if (shieldRenderer2 != null)
+
+        if (!active)
         {
-            Color color2 =
-                currentColor;
-
-
-            color2.a =
-                shieldAlpha2;
-
-
-            shieldRenderer2.color =
-                color2;
+            return;
         }
+
+
+        color.a =
+            shieldAlpha;
+
+
+        renderer.color =
+            color;
     }
 
 
@@ -778,51 +710,62 @@ public class PlayerHealth : MonoBehaviour
             0f;
 
 
+        float blinkTimer =
+            0f;
+
+
+        bool visible =
+            true;
+
+
+        float safeBlinkInterval =
+            Mathf.Max(
+                0.01f,
+                blinkInterval
+            );
+
+
         while (timer < invincibleTime)
         {
-            // ======================================
-            // 非表示
-            // ======================================
-
-            if (playerRenderer != null)
-            {
-                playerRenderer.enabled =
-                    false;
-            }
-
-
-            yield return new WaitForSeconds(
-                blinkInterval
-            );
+            float deltaTime =
+                Time.deltaTime;
 
 
             timer +=
-                blinkInterval;
+                deltaTime;
 
 
-            // ======================================
-            // 表示
-            // ======================================
+            blinkTimer +=
+                deltaTime;
 
-            if (playerRenderer != null)
+
+            if (
+                blinkTimer >=
+                safeBlinkInterval
+            )
             {
-                playerRenderer.enabled =
-                    true;
+                blinkTimer =
+                    0f;
+
+
+                visible =
+                    !visible;
+
+
+                if (playerRenderer != null)
+                {
+                    playerRenderer.enabled =
+                        visible;
+                }
             }
 
 
-            yield return new WaitForSeconds(
-                blinkInterval
-            );
-
-
-            timer +=
-                blinkInterval;
+            yield return null;
         }
 
 
         // ==========================================
-        // 最後は必ず表示
+        // 必ず表示状態に戻す
         // ==========================================
 
         if (playerRenderer != null)
@@ -838,96 +781,15 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // ダメージSE
-    // ==================================================
-
-    private void PlayDamageSE()
-    {
-        if (
-            audioSource == null ||
-            damageSE == null
-        )
-        {
-            return;
-        }
-
-
-        audioSource.PlayOneShot(
-            damageSE,
-            damageSEVolume
-        );
-    }
-
-
-    // ==================================================
-    // HEAL SE
-    // ==================================================
-
-    private void PlayHealSE()
-    {
-        if (
-            audioSource == null ||
-            healSE == null
-        )
-        {
-            return;
-        }
-
-
-        audioSource.PlayOneShot(
-            healSE,
-            healSEVolume
-        );
-    }
-
-
-    // ==================================================
-    // SHIELD SE
-    // ==================================================
-
-    private void PlayShieldGetSE()
-    {
-        if (
-            audioSource == null ||
-            shieldGetSE == null
-        )
-        {
-            return;
-        }
-
-
-        audioSource.PlayOneShot(
-            shieldGetSE,
-            shieldGetSEVolume
-        );
-    }
-
-
-    // ==================================================
-    // HeartUI
-    // ==================================================
-
-    private void UpdateHeartUI()
-    {
-        if (HeartUI.Instance == null)
-        {
-            return;
-        }
-
-
-        HeartUI.Instance.UpdateHearts(
-            currentHearts,
-            maxHearts
-        );
-    }
-
-
-    // ==================================================
-    // 死亡
+    // 死亡開始
     // ==================================================
 
     private void Die()
     {
+        // ==========================================
+        // 二重実行防止
+        // ==========================================
+
         if (isDead)
         {
             return;
@@ -938,19 +800,36 @@ public class PlayerHealth : MonoBehaviour
             true;
 
 
-        isInvincible =
-            false;
+        currentHearts =
+            0;
+
+
+        UpdateHeartUI();
 
 
         // ==========================================
-        // 点滅Coroutine停止
+        // 既存の無敵点滅などを停止
+        //
+        // DeathRoutineを開始する前に行う
         // ==========================================
 
         StopAllCoroutines();
 
 
         // ==========================================
-        // シールド解除
+        // プレイヤー入力禁止
+        // ==========================================
+
+        if (playerKeyMover != null)
+        {
+            playerKeyMover.SetInputEnabled(
+                false
+            );
+        }
+
+
+        // ==========================================
+        // シールド削除
         // ==========================================
 
         shieldHealth =
@@ -961,18 +840,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // プレイヤー画像OFF
-        // ==========================================
-
-        if (playerRenderer != null)
-        {
-            playerRenderer.enabled =
-                false;
-        }
-
-
-        // ==========================================
-        // Collider OFF
+        // 当たり判定OFF
         // ==========================================
 
         SetPlayerColliders(
@@ -981,34 +849,333 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 爆発
+        // 死亡演出開始
         // ==========================================
 
-        SpawnExplosion();
+        StartCoroutine(
+            DeathRoutine()
+        );
+    }
 
 
-        Debug.Log(
-            "プレイヤー死亡"
+    // ==================================================
+    // 死亡演出
+    // ==================================================
+
+    private IEnumerator DeathRoutine()
+    {
+        // ==========================================
+        // SpriteRenderer取得
+        //
+        // シールドはすでに非表示なので
+        // Player本体・子Spriteを透明化
+        // ==========================================
+
+        SpriteRenderer[] spriteRenderers =
+            GetComponentsInChildren<SpriteRenderer>(
+                true
+            );
+
+
+        Color[] originalColors =
+            new Color[spriteRenderers.Length];
+
+
+        for (
+            int i = 0;
+            i < spriteRenderers.Length;
+            i++
+        )
+        {
+            if (spriteRenderers[i] == null)
+            {
+                continue;
+            }
+
+
+            originalColors[i] =
+                spriteRenderers[i].color;
+        }
+
+
+        // ==========================================
+        // 点滅でRendererがOFFの可能性があるため
+        // 本体を表示状態へ戻す
+        // ==========================================
+
+        if (playerRenderer != null)
+        {
+            playerRenderer.enabled =
+                true;
+        }
+
+
+        // ==========================================
+        // 元の位置
+        // ==========================================
+
+        Vector3 originalPosition =
+            transform.position;
+
+
+        float timer =
+            0f;
+
+
+        float explosionTimer =
+            0f;
+
+
+        float duration =
+            Mathf.Max(
+                0.01f,
+                deathEffectDuration
+            );
+
+
+        float safeExplosionInterval =
+            Mathf.Max(
+                0.01f,
+                randomExplosionInterval
+            );
+
+
+        // ==========================================
+        // 死亡演出
+        // ==========================================
+
+        while (timer < duration)
+        {
+            float deltaTime =
+                Time.deltaTime;
+
+
+            timer +=
+                deltaTime;
+
+
+            explosionTimer +=
+                deltaTime;
+
+
+            float progress =
+                Mathf.Clamp01(
+                    timer /
+                    duration
+                );
+
+
+            // ======================================
+            // 小刻みに震える
+            // ======================================
+
+            Vector2 shakeOffset =
+                Random.insideUnitCircle *
+                deathShakeAmount;
+
+
+            transform.position =
+                originalPosition +
+                new Vector3(
+                    shakeOffset.x,
+                    shakeOffset.y,
+                    0f
+                );
+
+
+            // ======================================
+            // 徐々に透明化
+            // ======================================
+
+            float alphaRate =
+                1f -
+                progress;
+
+
+            for (
+                int i = 0;
+                i < spriteRenderers.Length;
+                i++
+            )
+            {
+                SpriteRenderer renderer =
+                    spriteRenderers[i];
+
+
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+
+                // シールドは死亡時非表示のまま
+                if (
+                    renderer == shieldRenderer1 ||
+                    renderer == shieldRenderer2
+                )
+                {
+                    continue;
+                }
+
+
+                Color color =
+                    originalColors[i];
+
+
+                color.a =
+                    originalColors[i].a *
+                    alphaRate;
+
+
+                renderer.color =
+                    color;
+            }
+
+
+            // ======================================
+            // 周囲でランダム爆発
+            // ======================================
+
+            while (
+                explosionTimer >=
+                safeExplosionInterval
+            )
+            {
+                explosionTimer -=
+                    safeExplosionInterval;
+
+
+                SpawnRandomDeathExplosion(
+                    originalPosition
+                );
+            }
+
+
+            yield return null;
+        }
+
+
+        // ==========================================
+        // 震えを戻す
+        // ==========================================
+
+        transform.position =
+            originalPosition;
+
+
+        // ==========================================
+        // 完全透明
+        // ==========================================
+
+        for (
+            int i = 0;
+            i < spriteRenderers.Length;
+            i++
+        )
+        {
+            SpriteRenderer renderer =
+                spriteRenderers[i];
+
+
+            if (renderer == null)
+            {
+                continue;
+            }
+
+
+            if (
+                renderer == shieldRenderer1 ||
+                renderer == shieldRenderer2
+            )
+            {
+                continue;
+            }
+
+
+            Color color =
+                renderer.color;
+
+
+            color.a =
+                0f;
+
+
+            renderer.color =
+                color;
+        }
+
+
+        // ==========================================
+        // 最後の大爆発
+        // ==========================================
+
+        SpawnFinalExplosion(
+            originalPosition
         );
 
 
         // ==========================================
-        // GameOver
+        // GAME OVER
+        //
+        // GameManager側で指定秒数後にResultへ
         // ==========================================
 
         if (GameManager.Instance != null)
         {
-            GameManager.Instance
-                .GameOver();
+            GameManager.Instance.GameOver();
         }
     }
 
 
     // ==================================================
-    // 爆発エフェクト
+    // ランダム爆発
     // ==================================================
 
-    private void SpawnExplosion()
+    private void SpawnRandomDeathExplosion(
+        Vector3 centerPosition
+    )
+    {
+        GameObject explosionPrefab =
+            randomExplosionEffectPrefab != null
+                ? randomExplosionEffectPrefab
+                : explosionEffectPrefab;
+
+
+        if (explosionPrefab == null)
+        {
+            return;
+        }
+
+
+        Vector2 randomOffset =
+            Random.insideUnitCircle *
+            randomExplosionRadius;
+
+
+        Vector3 spawnPosition =
+            centerPosition +
+            new Vector3(
+                randomOffset.x,
+                randomOffset.y,
+                0f
+            );
+
+
+        Instantiate(
+            explosionPrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
+    }
+
+
+    // ==================================================
+    // 最後の爆発
+    // ==================================================
+
+    private void SpawnFinalExplosion(
+        Vector3 centerPosition
+    )
     {
         if (explosionEffectPrefab == null)
         {
@@ -1018,14 +1185,15 @@ public class PlayerHealth : MonoBehaviour
 
         Instantiate(
             explosionEffectPrefab,
-            transform.position,
+            centerPosition +
+            explosionOffset,
             Quaternion.identity
         );
     }
 
 
     // ==================================================
-    // Collider切り替え
+    // Collider
     // ==================================================
 
     private void SetPlayerColliders(
@@ -1053,57 +1221,101 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // Bulletとの接触
+    // Heart UI
     // ==================================================
 
-    private void OnTriggerEnter2D(
-        Collider2D collision
-    )
+    private void UpdateHeartUI()
     {
-        if (collision == null)
+        if (HeartUI.Instance == null)
         {
             return;
         }
 
 
-        // ==========================================
-        // Bullet以外
-        // ==========================================
-
-        if (!collision.CompareTag("Bullet"))
-        {
-            return;
-        }
+        HeartUI.Instance.UpdateHearts(
+            currentHearts,
+            maxHearts
+        );
+    }
 
 
-        // ==========================================
-        // 移動中
-        // ==========================================
+    // ==================================================
+    // SE
+    // ==================================================
 
+    private void PlayDamageSE()
+    {
         if (
-            playerKeyMover != null &&
-            playerKeyMover.isMoving
+            audioSource == null ||
+            damageSE == null
         )
         {
             return;
         }
 
 
-        // ==========================================
-        // ダメージ
-        // ==========================================
-
-        TakeDamage(
-            1
+        audioSource.PlayOneShot(
+            damageSE,
+            damageSEVolume
         );
+    }
 
 
-        // ==========================================
-        // 弾削除
-        // ==========================================
+    private void PlayHealSE()
+    {
+        if (
+            audioSource == null ||
+            healSE == null
+        )
+        {
+            return;
+        }
 
-        Destroy(
-            collision.gameObject
+
+        audioSource.PlayOneShot(
+            healSE,
+            healSEVolume
         );
+    }
+
+
+    private void PlayShieldGetSE()
+    {
+        if (
+            audioSource == null ||
+            shieldGetSE == null
+        )
+        {
+            return;
+        }
+
+
+        audioSource.PlayOneShot(
+            shieldGetSE,
+            shieldGetSEVolume
+        );
+    }
+
+
+    // ==================================================
+    // 敵弾
+    // ==================================================
+
+    private void OnTriggerEnter2D(
+        Collider2D collision
+    )
+    {
+        if (isDead)
+        {
+            return;
+        }
+
+
+        if (collision.CompareTag("EnemyBullet"))
+        {
+            TakeDamage(
+                1
+            );
+        }
     }
 }

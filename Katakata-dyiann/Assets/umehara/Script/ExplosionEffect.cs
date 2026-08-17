@@ -3,26 +3,38 @@ using UnityEngine;
 
 public class ExplosionEffect : MonoBehaviour
 {
+    // ==================================================
+    // Spriteアニメーション
+    // ==================================================
+
     [Header("爆発アニメーション")]
 
     [SerializeField]
     private SpriteRenderer spriteRenderer;
 
-    [Tooltip("爆発画像を順番に15枚入れる")]
     [SerializeField]
     private Sprite[] explosionSprites;
 
-
-    [Header("再生設定")]
-
-    [Tooltip("1枚あたりの表示時間")]
     [SerializeField]
     private float frameInterval = 0.05f;
 
-    [Tooltip("再生終了後に自動削除")]
-    [SerializeField]
-    private bool destroyAfterPlay = true;
 
+    // ==================================================
+    // SE
+    // ==================================================
+
+    [Header("爆発SE")]
+
+    [SerializeField]
+    private AudioClip explosionSE;
+
+    [SerializeField, Range(0f, 1f)]
+    private float explosionSEVolume = 1f;
+
+
+    // ==================================================
+    // Unity
+    // ==================================================
 
     private void Awake()
     {
@@ -36,48 +48,95 @@ public class ExplosionEffect : MonoBehaviour
 
     private void Start()
     {
+        // ==========================================
+        // 爆発SE
+        // ==========================================
+
+        PlayExplosionSE();
+
+
+        // ==========================================
+        // 爆発アニメーション
+        // ==========================================
+
         StartCoroutine(
-            PlayExplosion()
+            ExplosionAnimationRoutine()
         );
     }
 
 
-    private IEnumerator PlayExplosion()
+    // ==================================================
+    // 爆発アニメーション
+    // ==================================================
+
+    private IEnumerator ExplosionAnimationRoutine()
     {
-        if (
-            spriteRenderer == null ||
-            explosionSprites == null ||
-            explosionSprites.Length == 0
-        )
+        if (spriteRenderer == null)
         {
-            if (destroyAfterPlay)
-            {
-                Destroy(gameObject);
-            }
+            Destroy(gameObject);
 
             yield break;
         }
 
 
-        for (
-            int i = 0;
-            i < explosionSprites.Length;
-            i++
+        if (
+            explosionSprites == null ||
+            explosionSprites.Length == 0
         )
         {
+            Destroy(gameObject);
+
+            yield break;
+        }
+
+
+        float safeInterval =
+            Mathf.Max(
+                0.01f,
+                frameInterval
+            );
+
+
+        foreach (Sprite sprite in explosionSprites)
+        {
+            if (sprite == null)
+            {
+                continue;
+            }
+
+
             spriteRenderer.sprite =
-                explosionSprites[i];
+                sprite;
 
 
             yield return new WaitForSeconds(
-                frameInterval
+                safeInterval
             );
         }
 
 
-        if (destroyAfterPlay)
+        Destroy(
+            gameObject
+        );
+    }
+
+
+    // ==================================================
+    // 爆発SE
+    // ==================================================
+
+    private void PlayExplosionSE()
+    {
+        if (explosionSE == null)
         {
-            Destroy(gameObject);
+            return;
         }
+
+
+        AudioSource.PlayClipAtPoint(
+            explosionSE,
+            transform.position,
+            explosionSEVolume
+        );
     }
 }
