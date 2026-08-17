@@ -4590,8 +4590,12 @@ MonoBehaviour:
   invincibleTime: 1
   blinkInterval: 0.1
   playerRenderer: {fileID: 1813944307}
-  hasShield: 0
-  shieldObject: {fileID: 1820768038}
+  maxShieldHealth: 3
+  shieldRenderer1: {fileID: 0}
+  shieldRenderer2: {fileID: 0}
+  shieldBlue: {r: 0, g: 0, b: 1, a: 1}
+  shieldYellow: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  shieldRed: {r: 1, g: 0, b: 0, a: 1}
   audioSource: {fileID: 1813944314}
   damageSE: {fileID: 8300000, guid: f0786fc7b46fb4e7188d386e21d2dc2a, type: 3}
   damageSEVolume: 1
@@ -4708,7 +4712,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1820768039
 Transform:
   m_ObjectHideFlags: 0

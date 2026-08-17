@@ -43,13 +43,60 @@ public class PlayerHealth : MonoBehaviour
 
     [Header("シールド")]
 
-    [Tooltip("現在シールドを持っているか")]
+    [Tooltip("シールドの最大耐久")]
     [SerializeField]
-    private bool hasShield = false;
+    private int maxShieldHealth = 3;
 
-    [Tooltip("シールド表示用オブジェクト")]
+    private int shieldHealth = 0;
+
+
+    // ==================================================
+    // シールド画像
+    // ==================================================
+
+    [Header("シールド画像")]
+
+    [Tooltip("シールド画像1")]
     [SerializeField]
-    private GameObject shieldObject;
+    private SpriteRenderer shieldRenderer1;
+
+    [Tooltip("シールド画像2")]
+    [SerializeField]
+    private SpriteRenderer shieldRenderer2;
+
+
+    // ==================================================
+    // シールド色
+    // ==================================================
+
+    [Header("シールド色")]
+
+    [Tooltip("耐久3の色")]
+    [SerializeField]
+    private Color shieldBlue = Color.blue;
+
+    [Tooltip("耐久2の色")]
+    [SerializeField]
+    private Color shieldYellow = Color.yellow;
+
+    [Tooltip("耐久1の色")]
+    [SerializeField]
+    private Color shieldRed = Color.red;
+
+
+    // ==================================================
+    // シールド透明度
+    // ==================================================
+
+    [Header("シールド透明度")]
+
+    [Tooltip("シールド画像1の透明度")]
+    [SerializeField, Range(0f, 1f)]
+    private float shieldAlpha1 = 1f;
+
+    [Tooltip("シールド画像2の透明度")]
+    [SerializeField, Range(0f, 1f)]
+    private float shieldAlpha2 = 0.5f;
 
 
     // ==================================================
@@ -126,7 +173,16 @@ public class PlayerHealth : MonoBehaviour
     {
         get
         {
-            return hasShield;
+            return shieldHealth > 0;
+        }
+    }
+
+
+    public int ShieldHealth
+    {
+        get
+        {
+            return shieldHealth;
         }
     }
 
@@ -141,6 +197,10 @@ public class PlayerHealth : MonoBehaviour
             maxHearts;
 
 
+        shieldHealth =
+            0;
+
+
         playerKeyMover =
             GetComponent<PlayerKeyMover>();
 
@@ -150,11 +210,6 @@ public class PlayerHealth : MonoBehaviour
             playerRenderer =
                 GetComponent<SpriteRenderer>();
         }
-
-
-        // 開始時はシールドなし
-        hasShield =
-            false;
 
 
         UpdateShieldVisual();
@@ -222,7 +277,7 @@ public class PlayerHealth : MonoBehaviour
         // SHIELD
         // ==========================================
 
-        if (hasShield)
+        if (HasShield)
         {
             UseShield();
 
@@ -276,7 +331,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // HP表示更新
+        // HP UI更新
         // ==========================================
 
         UpdateHeartUI();
@@ -291,7 +346,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 死亡
+        // 死亡判定
         // ==========================================
 
         if (currentHearts <= 0)
@@ -384,7 +439,7 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // SHIELD
+    // SHIELD獲得
     // PlayerKeyMoverから呼ばれる
     // ==================================================
 
@@ -396,42 +451,60 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
-        // シールドは1枚まで
-        if (hasShield)
-        {
-            return;
-        }
-
-
-        hasShield =
-            true;
+        // シールド耐久を最大まで回復
+        shieldHealth =
+            maxShieldHealth;
 
 
         UpdateShieldVisual();
 
 
         Debug.Log(
-            "SHIELD：シールド獲得"
+            "SHIELD獲得：耐久 " +
+            shieldHealth
         );
     }
 
 
     // ==================================================
-    // シールド使用
+    // SHIELD使用
     // ==================================================
 
     private void UseShield()
     {
-        hasShield =
-            false;
+        if (shieldHealth <= 0)
+        {
+            return;
+        }
 
 
-        UpdateShieldVisual();
+        // ==========================================
+        // 1発分消費
+        // ==========================================
+
+        shieldHealth--;
+
+
+        shieldHealth =
+            Mathf.Clamp(
+                shieldHealth,
+                0,
+                maxShieldHealth
+            );
 
 
         Debug.Log(
-            "SHIELD：ダメージを無効化"
+            "SHIELDでダメージ無効：" +
+            "残り耐久 " +
+            shieldHealth
         );
+
+
+        // ==========================================
+        // 表示更新
+        // ==========================================
+
+        UpdateShieldVisual();
     }
 
 
@@ -441,15 +514,109 @@ public class PlayerHealth : MonoBehaviour
 
     private void UpdateShieldVisual()
     {
-        if (shieldObject == null)
+        bool isActive =
+            shieldHealth > 0;
+
+
+        // ==========================================
+        // 表示 / 非表示
+        // ==========================================
+
+        if (shieldRenderer1 != null)
+        {
+            shieldRenderer1.gameObject.SetActive(
+                isActive
+            );
+        }
+
+
+        if (shieldRenderer2 != null)
+        {
+            shieldRenderer2.gameObject.SetActive(
+                isActive
+            );
+        }
+
+
+        // シールドがなければここまで
+        if (!isActive)
         {
             return;
         }
 
 
-        shieldObject.SetActive(
-            hasShield
-        );
+        // ==========================================
+        // 耐久に応じた色
+        // ==========================================
+
+        Color currentColor;
+
+
+        if (shieldHealth >= 3)
+        {
+            // --------------------------------------
+            // 耐久3：青
+            // --------------------------------------
+
+            currentColor =
+                shieldBlue;
+        }
+        else if (shieldHealth == 2)
+        {
+            // --------------------------------------
+            // 耐久2：黄
+            // --------------------------------------
+
+            currentColor =
+                shieldYellow;
+        }
+        else
+        {
+            // --------------------------------------
+            // 耐久1：赤
+            // --------------------------------------
+
+            currentColor =
+                shieldRed;
+        }
+
+
+        // ==========================================
+        // シールド画像1
+        // ==========================================
+
+        if (shieldRenderer1 != null)
+        {
+            Color color1 =
+                currentColor;
+
+
+            color1.a =
+                shieldAlpha1;
+
+
+            shieldRenderer1.color =
+                color1;
+        }
+
+
+        // ==========================================
+        // シールド画像2
+        // ==========================================
+
+        if (shieldRenderer2 != null)
+        {
+            Color color2 =
+                currentColor;
+
+
+            color2.a =
+                shieldAlpha2;
+
+
+            shieldRenderer2.color =
+                color2;
+        }
     }
 
 
@@ -469,7 +636,10 @@ public class PlayerHealth : MonoBehaviour
 
         while (timer < invincibleTime)
         {
+            // ======================================
             // 非表示
+            // ======================================
+
             if (playerRenderer != null)
             {
                 playerRenderer.enabled =
@@ -486,7 +656,10 @@ public class PlayerHealth : MonoBehaviour
                 blinkInterval;
 
 
+            // ======================================
             // 表示
+            // ======================================
+
             if (playerRenderer != null)
             {
                 playerRenderer.enabled =
@@ -504,7 +677,10 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
+        // ==========================================
         // 最後は必ず表示
+        // ==========================================
+
         if (playerRenderer != null)
         {
             playerRenderer.enabled =
@@ -582,15 +758,15 @@ public class PlayerHealth : MonoBehaviour
         // シールド解除
         // ==========================================
 
-        hasShield =
-            false;
+        shieldHealth =
+            0;
 
 
         UpdateShieldVisual();
 
 
         // ==========================================
-        // 点滅途中だった場合に表示を戻す
+        // 点滅中なら表示を戻す
         // ==========================================
 
         if (playerRenderer != null)
@@ -618,7 +794,7 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
-    // Bullet
+    // Bulletとの接触
     // ==================================================
 
     private void OnTriggerEnter2D(
@@ -640,12 +816,6 @@ public class PlayerHealth : MonoBehaviour
 
         // ==========================================
         // 移動中
-        // ==========================================
-        //
-        // PlayerKeyMoverでCollider自体も
-        // 無効化していますが念のため判定。
-        //
-        // 移動中なら弾も消さない。
         // ==========================================
 
         if (
