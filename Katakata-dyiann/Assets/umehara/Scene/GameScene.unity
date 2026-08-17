@@ -1648,6 +1648,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   hp: 1300
+  explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
 --- !u!61 &522753096
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4405,6 +4406,8 @@ MonoBehaviour:
   audioSource: {fileID: 1813944314}
   damageSE: {fileID: 8300000, guid: f0786fc7b46fb4e7188d386e21d2dc2a, type: 3}
   damageSEVolume: 1
+  explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
+  playerColliders: []
 --- !u!82 &1813944314
 AudioSource:
   m_ObjectHideFlags: 0

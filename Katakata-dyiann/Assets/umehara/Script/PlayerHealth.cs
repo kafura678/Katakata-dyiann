@@ -8,7 +8,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("HP")]
-
     [Tooltip("最大ハート数")]
     [SerializeField]
     private int maxHearts = 3;
@@ -21,7 +20,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("被弾後の無敵")]
-
     [Tooltip("被弾後の無敵時間")]
     [SerializeField]
     private float invincibleTime = 1f;
@@ -42,7 +40,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド")]
-
     [Tooltip("シールドの最大耐久")]
     [SerializeField]
     private int maxShieldHealth = 3;
@@ -55,7 +52,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド画像")]
-
     [Tooltip("シールド画像1")]
     [SerializeField]
     private SpriteRenderer shieldRenderer1;
@@ -70,7 +66,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド色")]
-
     [Tooltip("耐久3の色")]
     [SerializeField]
     private Color shieldBlue = Color.blue;
@@ -89,7 +84,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("シールド透明度")]
-
     [Tooltip("シールド画像1の透明度")]
     [SerializeField, Range(0f, 1f)]
     private float shieldAlpha1 = 1f;
@@ -104,7 +98,6 @@ public class PlayerHealth : MonoBehaviour
     // ==================================================
 
     [Header("ダメージSE")]
-
     [SerializeField]
     private AudioSource audioSource;
 
@@ -113,6 +106,25 @@ public class PlayerHealth : MonoBehaviour
 
     [SerializeField, Range(0f, 1f)]
     private float damageSEVolume = 1f;
+
+
+    // ==================================================
+    // 死亡エフェクト
+    // ==================================================
+
+    [Header("死亡エフェクト")]
+    [Tooltip("死亡時に生成する爆発Prefab")]
+    [SerializeField]
+    private GameObject explosionEffectPrefab;
+
+
+    // ==================================================
+    // プレイヤー当たり判定
+    // ==================================================
+
+    [Header("死亡時に無効化する当たり判定")]
+    [SerializeField]
+    private Collider2D[] playerColliders;
 
 
     // ==================================================
@@ -205,10 +217,28 @@ public class PlayerHealth : MonoBehaviour
             GetComponent<PlayerKeyMover>();
 
 
+        // ==========================================
+        // SpriteRenderer自動取得
+        // ==========================================
+
         if (playerRenderer == null)
         {
             playerRenderer =
                 GetComponent<SpriteRenderer>();
+        }
+
+
+        // ==========================================
+        // Collider自動取得
+        // ==========================================
+
+        if (
+            playerColliders == null ||
+            playerColliders.Length == 0
+        )
+        {
+            playerColliders =
+                GetComponentsInChildren<Collider2D>();
         }
 
 
@@ -231,7 +261,7 @@ public class PlayerHealth : MonoBehaviour
     )
     {
         // ==========================================
-        // 死亡中
+        // 死亡済み
         // ==========================================
 
         if (isDead)
@@ -346,7 +376,7 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 死亡判定
+        // 死亡
         // ==========================================
 
         if (currentHearts <= 0)
@@ -451,7 +481,10 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
-        // シールド耐久を最大まで回復
+        // ==========================================
+        // 耐久を最大まで回復
+        // ==========================================
+
         shieldHealth =
             maxShieldHealth;
 
@@ -524,21 +557,23 @@ public class PlayerHealth : MonoBehaviour
 
         if (shieldRenderer1 != null)
         {
-            shieldRenderer1.gameObject.SetActive(
-                isActive
-            );
+            shieldRenderer1.gameObject
+                .SetActive(
+                    isActive
+                );
         }
 
 
         if (shieldRenderer2 != null)
         {
-            shieldRenderer2.gameObject.SetActive(
-                isActive
-            );
+            shieldRenderer2.gameObject
+                .SetActive(
+                    isActive
+                );
         }
 
 
-        // シールドがなければここまで
+        // シールドなし
         if (!isActive)
         {
             return;
@@ -554,28 +589,19 @@ public class PlayerHealth : MonoBehaviour
 
         if (shieldHealth >= 3)
         {
-            // --------------------------------------
             // 耐久3：青
-            // --------------------------------------
-
             currentColor =
                 shieldBlue;
         }
         else if (shieldHealth == 2)
         {
-            // --------------------------------------
             // 耐久2：黄
-            // --------------------------------------
-
             currentColor =
                 shieldYellow;
         }
         else
         {
-            // --------------------------------------
             // 耐久1：赤
-            // --------------------------------------
-
             currentColor =
                 shieldRed;
         }
@@ -755,6 +781,13 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
+        // 無敵点滅などを停止
+        // ==========================================
+
+        StopAllCoroutines();
+
+
+        // ==========================================
         // シールド解除
         // ==========================================
 
@@ -766,14 +799,30 @@ public class PlayerHealth : MonoBehaviour
 
 
         // ==========================================
-        // 点滅中なら表示を戻す
+        // プレイヤー画像を非表示
         // ==========================================
 
         if (playerRenderer != null)
         {
             playerRenderer.enabled =
-                true;
+                false;
         }
+
+
+        // ==========================================
+        // 当たり判定を無効化
+        // ==========================================
+
+        SetPlayerColliders(
+            false
+        );
+
+
+        // ==========================================
+        // 爆発
+        // ==========================================
+
+        SpawnExplosion();
 
 
         Debug.Log(
@@ -794,6 +843,57 @@ public class PlayerHealth : MonoBehaviour
 
 
     // ==================================================
+    // 爆発エフェクト生成
+    // ==================================================
+
+    private void SpawnExplosion()
+    {
+        if (explosionEffectPrefab == null)
+        {
+            return;
+        }
+
+
+        Instantiate(
+            explosionEffectPrefab,
+            transform.position,
+            Quaternion.identity
+        );
+    }
+
+
+    // ==================================================
+    // Collider切り替え
+    // ==================================================
+
+    private void SetPlayerColliders(
+        bool enabled
+    )
+    {
+        if (playerColliders == null)
+        {
+            return;
+        }
+
+
+        foreach (
+            Collider2D col
+            in playerColliders
+        )
+        {
+            if (col == null)
+            {
+                continue;
+            }
+
+
+            col.enabled =
+                enabled;
+        }
+    }
+
+
+    // ==================================================
     // Bulletとの接触
     // ==================================================
 
@@ -807,7 +907,10 @@ public class PlayerHealth : MonoBehaviour
         }
 
 
+        // ==========================================
         // Bullet以外
+        // ==========================================
+
         if (!collision.CompareTag("Bullet"))
         {
             return;

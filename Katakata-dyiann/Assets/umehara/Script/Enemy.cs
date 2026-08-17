@@ -3,6 +3,9 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float hp = 3f;
+    [Header("死亡エフェクト")]
+    [SerializeField]
+    private GameObject explosionEffectPrefab;
 
     public void TakeDamage(float damage)
 
@@ -23,6 +26,16 @@ public class Enemy : MonoBehaviour
     private void Die()
     {
         Debug.Log("Boss Defeated");
+
+        if (explosionEffectPrefab != null)
+        {
+            Instantiate(
+                explosionEffectPrefab,
+                transform.position,
+                Quaternion.identity
+            );
+        }
+
 
         if (GameManager.Instance != null)
         {
