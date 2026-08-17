@@ -582,7 +582,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::bossSequentialWaveBulletPattern
   bulletFactory: {fileID: 3984821589272065032}
   startAngle: 0
-  angleStep: 15
+  angleStep: 12.5
+  bulletCountPerFire: 2
+  bulletSpreadAngle: 180
 --- !u!1 &4604289511050748490
 GameObject:
   m_ObjectHideFlags: 0
@@ -832,9 +834,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::bossSimultaneousBulletPattern
   bulletFactory: {fileID: 8534506888289206237}
-  bulletCount: 5
+  bulletCount: 6
   baseAngle: 0
-  rotateAnglePerFire: 10
+  rotateAnglePerFire: 12.5
 --- !u!1 &6367071602965174426
 GameObject:
   m_ObjectHideFlags: 0
