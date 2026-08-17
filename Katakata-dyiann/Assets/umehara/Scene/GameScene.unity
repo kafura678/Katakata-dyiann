@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlowManager
   flowGauge: 0
   maxFlowGauge: 100
-  flowGainPerHit: 5
+  flowGainPerHit: 100
   isFlowMode: 0
   flowDuration: 5
   requiredAttackCount: 1
@@ -1647,7 +1647,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c40120af2ffa437a946a591d51cffe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  maxHp: 100
+  maxHp: 3000
   damagePopupPrefab: {fileID: 2738817509264179469, guid: 202d2ca1748724087b5637c669e39d75, type: 3}
   explosionEffectPrefab: {fileID: 375871136012893062, guid: 1e86eaf66749544adaa48ef0c8c34d84, type: 3}
   explosionOffset: {x: 0, y: 0, z: 0}
@@ -1994,7 +1994,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 00000000
+  m_ApplyToSortingLayers: 00000000539dc4a6
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -2479,9 +2479,10 @@ MonoBehaviour:
   comboResetTime: 2
   damageBonusPerCombo: 0.01
   maxDamageMultiplier: 1.5
+  maxDamage: 100
   baseScorePerHit: 100
   comboText: {fileID: 422737200}
-  comboTimerText: {fileID: 18748018}
+  comboTimerText: {fileID: 0}
 --- !u!4 &895144819
 Transform:
   m_ObjectHideFlags: 0
@@ -4292,6 +4293,8 @@ MonoBehaviour:
   slashWidth: 0.4
   baseDamage: 1
   distanceDamageRate: 0.5
+  minimumRandomDamageRate: 0.9
+  maximumRandomDamageRate: 1.1
   slashLine: {fileID: 533974692}
   slashLineTime: 0.08
   afterImagePrefab: {fileID: 5078891719955181059, guid: e684418b1d3de473cb3c0edc2985d913, type: 3}
@@ -4315,11 +4318,12 @@ MonoBehaviour:
   beamDamage: 30
   beamChargeTime: 1
   beamLifeTime: 2
+  beamDamageInterval: 0.1
   beamSideDistance: 2
   beamPositionMoveDuration: 0.1
   beamAngleOffset: 0
   beamSpawnOffset: {x: 0, y: 0}
-  beamSE: {fileID: 0}
+  beamSE: {fileID: 8300000, guid: d9dd3c81488554d1ca1abbc4a09edd88, type: 3}
   beamSEVolume: 1
 --- !u!50 &1813944311
 Rigidbody2D:
