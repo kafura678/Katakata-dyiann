@@ -4327,6 +4327,7 @@ MonoBehaviour:
   beamPositionMoveDuration: 0.1
   beamAngleOffset: 0
   beamSpawnOffset: {x: 0, y: 0}
+  beamOrderInLayer: 20
   beamEndSprites:
   - {fileID: 21300000, guid: 4bf67fb883b02441083f049603912a83, type: 3}
   - {fileID: 21300000, guid: 19a15af9e37af443e97e3cee3c270af4, type: 3}
@@ -4427,7 +4428,7 @@ MonoBehaviour:
   audioSource: {fileID: 1813944314}
   damageSE: {fileID: 8300000, guid: f0786fc7b46fb4e7188d386e21d2dc2a, type: 3}
   damageSEVolume: 1
-  healSE: {fileID: 0}
+  healSE: {fileID: 8300000, guid: f2ebde4af79f04727bdf60cb32da504d, type: 3}
   healSEVolume: 1
   shieldGetSE: {fileID: 8300000, guid: 506049402100e404495663cf1dff224c, type: 3}
   shieldGetSEVolume: 1
