@@ -3321,6 +3321,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1332744030452822823, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: angleStep
+      value: 12.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1332744030452822823, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: bulletSpreadAngle
+      value: 180
+      objectReference: {fileID: 0}
     - target: {fileID: 2548928041728780352, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.29573
