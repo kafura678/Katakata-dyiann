@@ -47,6 +47,7 @@ public class PlayerKeyMover : MonoBehaviour
     // ==================================================
 
     [Header("移動設定")]
+
     [SerializeField]
     private float moveDuration = 0.05f;
 
@@ -54,10 +55,22 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
+    // プレイヤー当たり判定
+    // ==================================================
+
+    [Header("プレイヤー当たり判定")]
+
+    [Tooltip("移動中に無効化するCollider")]
+    [SerializeField]
+    private Collider2D[] playerColliders;
+
+
+    // ==================================================
     // 移動先の敵判定
     // ==================================================
 
     [Header("移動先の敵判定")]
+
     [SerializeField]
     private float movePointCheckRadius = 0.45f;
 
@@ -70,6 +83,7 @@ public class PlayerKeyMover : MonoBehaviour
     // ==================================================
 
     [Header("斬撃設定")]
+
     [SerializeField]
     private LayerMask enemyLayer;
 
@@ -88,6 +102,7 @@ public class PlayerKeyMover : MonoBehaviour
     // ==================================================
 
     [Header("斬撃ライン")]
+
     [SerializeField]
     private LineRenderer slashLine;
 
@@ -100,6 +115,7 @@ public class PlayerKeyMover : MonoBehaviour
     // ==================================================
 
     [Header("残像")]
+
     [SerializeField]
     private GameObject afterImagePrefab;
 
@@ -111,10 +127,11 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // SE
+    // 移動SE
     // ==================================================
 
     [Header("移動SE")]
+
     [SerializeField]
     private AudioSource audioSource;
 
@@ -130,6 +147,7 @@ public class PlayerKeyMover : MonoBehaviour
     // ==================================================
 
     [Header("単語コマンド")]
+
     [SerializeField]
     private List<WordCommand> wordCommands =
         new List<WordCommand>();
@@ -143,6 +161,7 @@ public class PlayerKeyMover : MonoBehaviour
     // ==================================================
 
     [Header("超必殺・対象ボス")]
+
     [SerializeField]
     private boss bossTarget;
 
@@ -161,11 +180,11 @@ public class PlayerKeyMover : MonoBehaviour
     [SerializeField]
     private float ultimateRushDamage = 4f;
 
-    [Tooltip("連続攻撃時の移動時間")]
+    [Tooltip("1回の高速移動にかかる時間")]
     [SerializeField]
     private float ultimateRushMoveDuration = 0.04f;
 
-    [Tooltip("ボス周囲を飛び回る半径")]
+    [Tooltip("ボス周辺を移動する半径")]
     [SerializeField]
     private float ultimateRushRadius = 1.2f;
 
@@ -180,6 +199,7 @@ public class PlayerKeyMover : MonoBehaviour
 
     [Header("超必殺・ビーム")]
 
+    [Tooltip("ビーム画像のPrefab")]
     [SerializeField]
     private GameObject beamPrefab;
 
@@ -187,15 +207,15 @@ public class PlayerKeyMover : MonoBehaviour
     [SerializeField]
     private float beamDamage = 30f;
 
-    [Tooltip("ビーム前の溜め時間")]
+    [Tooltip("ビーム発射前の溜め時間")]
     [SerializeField]
     private float beamChargeTime = 0.25f;
 
-    [Tooltip("ビーム表示時間")]
+    [Tooltip("ビームの表示時間")]
     [SerializeField]
     private float beamLifeTime = 0.5f;
 
-    [Tooltip("ボスの横へ離れる距離")]
+    [Tooltip("ボスから横へ離れる距離")]
     [SerializeField]
     private float beamSideDistance = 2f;
 
@@ -230,20 +250,38 @@ public class PlayerKeyMover : MonoBehaviour
     {
         playerHealth =
             GetComponent<PlayerHealth>();
+
+
+        // InspectorでColliderを設定していなければ自動取得
+        if (
+            playerColliders == null ||
+            playerColliders.Length == 0
+        )
+        {
+            playerColliders =
+                GetComponentsInChildren<Collider2D>();
+        }
     }
+
 
     private void Start()
     {
-        // Inspectorで設定していない場合
+        // InspectorでBossを設定していなければ取得
         if (bossTarget == null)
         {
             bossTarget =
                 FindFirstObjectByType<boss>();
         }
+
+
+        // 開始時は当たり判定ON
+        SetPlayerColliders(true);
     }
+
 
     private void Update()
     {
+        // 死亡中
         if (
             playerHealth != null &&
             playerHealth.IsDead
@@ -252,11 +290,13 @@ public class PlayerKeyMover : MonoBehaviour
             return;
         }
 
-        // 超必殺中は通常入力禁止
+
+        // 超必殺中
         if (isUltimatePlaying)
         {
             return;
         }
+
 
         HandleInput();
     }
@@ -268,10 +308,12 @@ public class PlayerKeyMover : MonoBehaviour
 
     private void HandleInput()
     {
+        // 移動中
         if (isMoving)
         {
             return;
         }
+
 
         foreach (KeyMovePoint data in keyMovePoints)
         {
@@ -279,6 +321,7 @@ public class PlayerKeyMover : MonoBehaviour
             {
                 continue;
             }
+
 
             if (data.movePoint == null)
             {
@@ -290,33 +333,47 @@ public class PlayerKeyMover : MonoBehaviour
                 continue;
             }
 
+
             Vector3 targetPosition =
                 data.movePoint.position;
 
 
+            // ==========================================
             // 現在位置と同じキー
+            // ==========================================
+
             if (IsSamePosition(targetPosition))
             {
+                // 移動なし
+                // 攻撃なし
+                // SEなし
+                // コマンド入力なし
                 return;
             }
 
 
+            // ==========================================
             // 移動先に敵がいる
+            // ==========================================
+
             if (IsEnemyAtPosition(targetPosition))
             {
                 TakeDamage(
                     damageOnBlockedMove
                 );
 
+
                 Transform safePoint =
                     FindNearestSafeMovePoint(
                         targetPosition
                     );
 
+
                 if (safePoint == null)
                 {
                     return;
                 }
+
 
                 targetPosition =
                     safePoint.position;
@@ -336,6 +393,7 @@ public class PlayerKeyMover : MonoBehaviour
                 )
             );
 
+
             break;
         }
     }
@@ -352,12 +410,24 @@ public class PlayerKeyMover : MonoBehaviour
     {
         isMoving = true;
 
+
+        // ==========================================
+        // 移動中は当たり判定OFF
+        // ==========================================
+
+        SetPlayerColliders(false);
+
+
         Vector3 startPosition =
             transform.position;
 
         Vector3 endPosition =
             targetPosition;
 
+
+        // ==========================================
+        // ダメージ計算
+        // ==========================================
 
         float damage =
             CalculateDamage(
@@ -366,6 +436,10 @@ public class PlayerKeyMover : MonoBehaviour
             );
 
 
+        // ==========================================
+        // 攻撃
+        // ==========================================
+
         DamageEnemiesOnLine(
             startPosition,
             endPosition,
@@ -373,11 +447,19 @@ public class PlayerKeyMover : MonoBehaviour
         );
 
 
+        // ==========================================
+        // 演出
+        // ==========================================
+
         PlayMoveEffects(
             startPosition,
             endPosition
         );
 
+
+        // ==========================================
+        // 移動
+        // ==========================================
 
         yield return StartCoroutine(
             MoveRoutine(
@@ -388,10 +470,20 @@ public class PlayerKeyMover : MonoBehaviour
         );
 
 
+        // ==========================================
+        // 単語入力
+        // ==========================================
+
         RegisterMoveKey(
             usedKey
         );
 
+
+        // ==========================================
+        // 移動終了
+        // ==========================================
+
+        SetPlayerColliders(true);
 
         isMoving = false;
     }
@@ -410,6 +502,7 @@ public class PlayerKeyMover : MonoBehaviour
         if (duration <= 0f)
         {
             transform.position = end;
+
             yield break;
         }
 
@@ -419,7 +512,8 @@ public class PlayerKeyMover : MonoBehaviour
 
         while (timer < duration)
         {
-            timer += Time.deltaTime;
+            timer +=
+                Time.deltaTime;
 
 
             float t =
@@ -440,12 +534,41 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
-        transform.position = end;
+        transform.position =
+            end;
     }
 
 
     // ==================================================
-    // 通常ダメージ
+    // Collider切り替え
+    // ==================================================
+
+    private void SetPlayerColliders(
+        bool enabled
+    )
+    {
+        if (playerColliders == null)
+        {
+            return;
+        }
+
+
+        foreach (
+            Collider2D col
+            in playerColliders
+        )
+        {
+            if (col != null)
+            {
+                col.enabled =
+                    enabled;
+            }
+        }
+    }
+
+
+    // ==================================================
+    // 通常ダメージ計算
     // ==================================================
 
     private float CalculateDamage(
@@ -462,9 +585,11 @@ public class PlayerKeyMover : MonoBehaviour
 
         float damage =
             baseDamage +
-            distance * distanceDamageRate;
+            distance *
+            distanceDamageRate;
 
 
+        // コンボ倍率
         if (ComboManager.Instance != null)
         {
             damage *=
@@ -517,6 +642,11 @@ public class PlayerKeyMover : MonoBehaviour
             new HashSet<Enemy>();
 
 
+        // Enemyを継承していないMinion用
+        HashSet<BossMinion> damagedMinions =
+            new HashSet<BossMinion>();
+
+
         foreach (RaycastHit2D hit in hits)
         {
             if (hit.collider == null)
@@ -525,6 +655,10 @@ public class PlayerKeyMover : MonoBehaviour
             }
 
 
+            // ======================================
+            // Enemy
+            // ======================================
+
             Enemy enemy =
                 hit.collider
                     .GetComponentInParent<Enemy>();
@@ -532,7 +666,11 @@ public class PlayerKeyMover : MonoBehaviour
 
             if (enemy != null)
             {
-                if (damagedEnemies.Contains(enemy))
+                if (
+                    damagedEnemies.Contains(
+                        enemy
+                    )
+                )
                 {
                     continue;
                 }
@@ -554,7 +692,10 @@ public class PlayerKeyMover : MonoBehaviour
             }
 
 
-            // BossMinionがEnemyを継承していない場合
+            // ======================================
+            // BossMinion
+            // ======================================
+
             BossMinion minion =
                 hit.collider
                     .GetComponentInParent<BossMinion>();
@@ -562,8 +703,23 @@ public class PlayerKeyMover : MonoBehaviour
 
             if (minion != null)
             {
+                if (
+                    damagedMinions.Contains(
+                        minion
+                    )
+                )
+                {
+                    continue;
+                }
+
+
                 minion.TakeDamage(
                     damage
+                );
+
+
+                damagedMinions.Add(
+                    minion
                 );
 
 
@@ -579,7 +735,10 @@ public class PlayerKeyMover : MonoBehaviour
 
     private void OnSuccessfulAttack()
     {
+        // ==========================================
         // コンボ
+        // ==========================================
+
         if (ComboManager.Instance != null)
         {
             ComboManager.Instance
@@ -587,7 +746,10 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
+        // ==========================================
         // FLOW
+        // ==========================================
+
         if (FlowManager.Instance == null)
         {
             return;
@@ -664,6 +826,7 @@ public class PlayerKeyMover : MonoBehaviour
             0,
             start
         );
+
 
         slashLine.SetPosition(
             1,
@@ -753,22 +916,25 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 同じ位置
+    // 同じ位置か
     // ==================================================
 
     private bool IsSamePosition(
         Vector3 position
     )
     {
-        return Vector2.Distance(
-            transform.position,
-            position
-        ) < 0.01f;
+        return
+            Vector2.Distance(
+                transform.position,
+                position
+            )
+            <
+            0.01f;
     }
 
 
     // ==================================================
-    // 移動先の敵
+    // 移動先に敵がいるか
     // ==================================================
 
     private bool IsEnemyAtPosition(
@@ -783,25 +949,31 @@ public class PlayerKeyMover : MonoBehaviour
             );
 
 
-        return hit != null;
+        return
+            hit != null;
     }
 
 
     // ==================================================
-    // 最寄り安全地点
+    // 一番近い安全なキー位置
     // ==================================================
 
     private Transform FindNearestSafeMovePoint(
         Vector3 blockedPosition
     )
     {
-        Transform nearestPoint = null;
+        Transform nearestPoint =
+            null;
+
 
         float nearestDistance =
             float.MaxValue;
 
 
-        foreach (KeyMovePoint data in keyMovePoints)
+        foreach (
+            KeyMovePoint data
+            in keyMovePoints
+        )
         {
             if (data.movePoint == null)
             {
@@ -813,6 +985,7 @@ public class PlayerKeyMover : MonoBehaviour
                 data.movePoint.position;
 
 
+            // 敵がいる場所は除外
             if (IsEnemyAtPosition(position))
             {
                 continue;
@@ -826,10 +999,14 @@ public class PlayerKeyMover : MonoBehaviour
                 );
 
 
-            if (distance < nearestDistance)
+            if (
+                distance <
+                nearestDistance
+            )
             {
                 nearestDistance =
                     distance;
+
 
                 nearestPoint =
                     data.movePoint;
@@ -842,7 +1019,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 単語キー登録
+    // 単語入力
     // ==================================================
 
     private void RegisterMoveKey(
@@ -850,9 +1027,11 @@ public class PlayerKeyMover : MonoBehaviour
     )
     {
         string keyString =
-            key.ToString().ToUpper();
+            key.ToString()
+                .ToUpper();
 
 
+        // A～Zのみ
         if (keyString.Length != 1)
         {
             return;
@@ -884,11 +1063,14 @@ public class PlayerKeyMover : MonoBehaviour
             moveKeyHistory.ToString();
 
 
-        // ------------------------------------------
-        // 完成
-        // ------------------------------------------
+        // ==========================================
+        // 完成した単語
+        // ==========================================
 
-        foreach (WordCommand command in wordCommands)
+        foreach (
+            WordCommand command
+            in wordCommands
+        )
         {
             if (!IsValidCommand(command))
             {
@@ -918,16 +1100,20 @@ public class PlayerKeyMover : MonoBehaviour
 
                 moveKeyHistory.Clear();
 
+
                 return;
             }
         }
 
 
-        // ------------------------------------------
+        // ==========================================
         // 入力途中
-        // ------------------------------------------
+        // ==========================================
 
-        foreach (WordCommand command in wordCommands)
+        foreach (
+            WordCommand command
+            in wordCommands
+        )
         {
             if (!IsValidCommand(command))
             {
@@ -956,9 +1142,9 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
-        // ------------------------------------------
-        // 最後の1文字から再スタート
-        // ------------------------------------------
+        // ==========================================
+        // 最後の文字から新しい単語
+        // ==========================================
 
         char lastCharacter =
             history[
@@ -966,7 +1152,10 @@ public class PlayerKeyMover : MonoBehaviour
             ];
 
 
-        foreach (WordCommand command in wordCommands)
+        foreach (
+            WordCommand command
+            in wordCommands
+        )
         {
             if (!IsValidCommand(command))
             {
@@ -978,13 +1167,17 @@ public class PlayerKeyMover : MonoBehaviour
                 command.word.ToUpper();
 
 
-            if (word[0] != lastCharacter)
+            if (
+                word[0] !=
+                lastCharacter
+            )
             {
                 continue;
             }
 
 
             moveKeyHistory.Clear();
+
 
             moveKeyHistory.Append(
                 lastCharacter
@@ -1004,9 +1197,9 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
-        // ------------------------------------------
-        // どれにも該当しない
-        // ------------------------------------------
+        // ==========================================
+        // どの単語にも該当しない
+        // ==========================================
 
         moveKeyHistory.Clear();
 
@@ -1127,9 +1320,21 @@ public class PlayerKeyMover : MonoBehaviour
 
     private IEnumerator UltimateAttackRoutine()
     {
-        isUltimatePlaying = true;
+        isUltimatePlaying =
+            true;
 
-        isMoving = true;
+
+        isMoving =
+            true;
+
+
+        // ==========================================
+        // 超必殺中は当たり判定OFF
+        // ==========================================
+
+        SetPlayerColliders(
+            false
+        );
 
 
         // ==========================================
@@ -1152,12 +1357,13 @@ public class PlayerKeyMover : MonoBehaviour
 
             FinishUltimate();
 
+
             yield break;
         }
 
 
         // ==========================================
-        // bossからEnemy取得
+        // Enemy取得
         // ==========================================
 
         Enemy bossEnemy =
@@ -1173,12 +1379,13 @@ public class PlayerKeyMover : MonoBehaviour
 
             FinishUltimate();
 
+
             yield break;
         }
 
 
         // ==========================================
-        // 連続攻撃
+        // 連続高速攻撃
         // ==========================================
 
         yield return StartCoroutine(
@@ -1189,6 +1396,7 @@ public class PlayerKeyMover : MonoBehaviour
         );
 
 
+        // 連撃中にボスが倒れた
         if (bossTarget == null)
         {
             FinishUltimate();
@@ -1237,7 +1445,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // ビーム
+        // ビーム発射
         // ==========================================
 
         FireUltimateBeam(
@@ -1247,7 +1455,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         // ==========================================
-        // ビーム表示時間
+        // ビーム表示中
         // ==========================================
 
         if (beamLifeTime > 0f)
@@ -1263,7 +1471,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // bossからEnemyを取得
+    // bossからEnemy取得
     // ==================================================
 
     private Enemy GetBossEnemy()
@@ -1274,8 +1482,10 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
+        // 同じオブジェクト
         Enemy enemy =
-            bossTarget.GetComponent<Enemy>();
+            bossTarget
+                .GetComponent<Enemy>();
 
 
         if (enemy != null)
@@ -1284,8 +1494,10 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
+        // 親
         enemy =
-            bossTarget.GetComponentInParent<Enemy>();
+            bossTarget
+                .GetComponentInParent<Enemy>();
 
 
         if (enemy != null)
@@ -1294,8 +1506,10 @@ public class PlayerKeyMover : MonoBehaviour
         }
 
 
+        // 子
         enemy =
-            bossTarget.GetComponentInChildren<Enemy>();
+            bossTarget
+                .GetComponentInChildren<Enemy>();
 
 
         return enemy;
@@ -1303,7 +1517,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 超必殺：連続高速攻撃
+    // 超必殺：連続攻撃
     // ==================================================
 
     private IEnumerator UltimateRushAttack(
@@ -1327,18 +1541,21 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             // ======================================
-            // ボス周囲の攻撃位置
+            // ボス周辺の位置を決める
             // ======================================
 
             float angle =
-                (360f / ultimateRushCount) *
+                (360f /
+                ultimateRushCount)
+                *
                 i;
 
 
-            // 単純に円を回って見えないようにずらす
+            // 単純な円運動にならないようずらす
             if (i % 2 == 1)
             {
-                angle += 140f;
+                angle +=
+                    140f;
             }
 
 
@@ -1352,12 +1569,16 @@ public class PlayerKeyMover : MonoBehaviour
                     Mathf.Cos(radian),
                     Mathf.Sin(radian),
                     0f
-                ) *
+                )
+                *
                 ultimateRushRadius;
 
 
             Vector3 targetPosition =
-                targetBoss.transform.position +
+                targetBoss
+                    .transform
+                    .position
+                +
                 offset;
 
 
@@ -1388,7 +1609,7 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             // ======================================
-            // ダメージ
+            // 連撃ダメージ
             // ======================================
 
             bossEnemy.TakeDamage(
@@ -1429,10 +1650,13 @@ public class PlayerKeyMover : MonoBehaviour
 
 
             // ======================================
-            // 次の連撃まで
+            // 次の攻撃
             // ======================================
 
-            if (ultimateRushInterval > 0f)
+            if (
+                ultimateRushInterval >
+                0f
+            )
             {
                 yield return new WaitForSeconds(
                     ultimateRushInterval
@@ -1457,23 +1681,27 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         Vector3 bossPosition =
-            targetBoss.transform.position;
+            targetBoss
+                .transform
+                .position;
 
 
         Vector3 leftPosition =
-            bossPosition +
+            bossPosition
+            +
             Vector3.left *
             beamSideDistance;
 
 
         Vector3 rightPosition =
-            bossPosition +
+            bossPosition
+            +
             Vector3.right *
             beamSideDistance;
 
 
         // ==========================================
-        // 現在位置から近い方を選択
+        // 近い方を選ぶ
         // ==========================================
 
         float leftDistance =
@@ -1492,8 +1720,10 @@ public class PlayerKeyMover : MonoBehaviour
 
         Vector3 targetPosition =
             leftDistance <= rightDistance
-            ? leftPosition
-            : rightPosition;
+            ?
+            leftPosition
+            :
+            rightPosition;
 
 
         Vector3 startPosition =
@@ -1535,14 +1765,21 @@ public class PlayerKeyMover : MonoBehaviour
 
 
         Vector3 direction =
-            targetBoss.transform.position -
+            targetBoss
+                .transform
+                .position
+            -
             transform.position;
 
 
-        direction.z = 0f;
+        direction.z =
+            0f;
 
 
-        if (direction.sqrMagnitude <= 0.001f)
+        if (
+            direction.sqrMagnitude <=
+            0.001f
+        )
         {
             return;
         }
@@ -1558,7 +1795,8 @@ public class PlayerKeyMover : MonoBehaviour
                 Mathf.Atan2(
                     direction.y,
                     direction.x
-                ) *
+                )
+                *
                 Mathf.Rad2Deg;
 
 
@@ -1605,9 +1843,18 @@ public class PlayerKeyMover : MonoBehaviour
 
     private void FinishUltimate()
     {
-        isMoving = false;
+        // 当たり判定を戻す
+        SetPlayerColliders(
+            true
+        );
 
-        isUltimatePlaying = false;
+
+        isMoving =
+            false;
+
+
+        isUltimatePlaying =
+            false;
 
 
         if (FlowManager.Instance != null)
@@ -1619,7 +1866,8 @@ public class PlayerKeyMover : MonoBehaviour
 
 
     // ==================================================
-    // 外部ダメージ
+    // 外部からダメージ
+    // BossBulletなどから使用
     // ==================================================
 
     public void TakeDamage(
@@ -1654,7 +1902,10 @@ public class PlayerKeyMover : MonoBehaviour
             Color.red;
 
 
-        foreach (KeyMovePoint data in keyMovePoints)
+        foreach (
+            KeyMovePoint data
+            in keyMovePoints
+        )
         {
             if (data.movePoint == null)
             {
