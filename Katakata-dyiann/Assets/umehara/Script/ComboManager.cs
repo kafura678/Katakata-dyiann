@@ -46,6 +46,18 @@ public class ComboManager : MonoBehaviour
     [Tooltip("1ヒットあたりの基本スコア")]
     public int baseScorePerHit = 100;
 
+    [Header("最大コンボ")]
+    [SerializeField]
+    private int maxComboCount = 0;
+
+    public int MaxComboCount
+    {
+        get
+        {
+            return maxComboCount;
+        }
+    }
+
 
     // ==================================================
     // UI
@@ -138,17 +150,16 @@ public class ComboManager : MonoBehaviour
         comboCount++;
 
 
-        // ==========================================
-        // コンボタイマーリセット
-        // ==========================================
+        if (comboCount > maxComboCount)
+        {
+            maxComboCount =
+                comboCount;
+        }
+
 
         comboTimer =
             comboResetTime;
 
-
-        // ==========================================
-        // スコア計算
-        // ==========================================
 
         int score =
             Mathf.RoundToInt(
@@ -156,10 +167,6 @@ public class ComboManager : MonoBehaviour
                 GetScoreMultiplier()
             );
 
-
-        // ==========================================
-        // スコア追加
-        // ==========================================
 
         if (GameManager.Instance != null)
         {
@@ -173,8 +180,8 @@ public class ComboManager : MonoBehaviour
         Debug.Log(
             "Combo: " +
             comboCount +
-            " / Damage x" +
-            GetDamageMultiplier()
+            " / Max Combo: " +
+            maxComboCount
         );
     }
 
