@@ -150,10 +150,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlowManager
   flowGauge: 0
   maxFlowGauge: 100
-  flowGainPerHit: 100
+  flowGainPerHit: 1
   isFlowMode: 0
-  flowDuration: 5
-  requiredAttackCount: 1
+  flowDuration: 10
+  requiredAttackCount: 20
   isUltimateReady: 0
   isUltimatePlaying: 0
   enemySlowRate: 0.3
@@ -608,6 +608,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6811259993040316418, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
       propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7827917707104830004, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
+      propertyPath: arrivalDistance
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8294203200266678204, guid: ac812176fc43348948d69a7d512b32f4, type: 3}
@@ -2479,7 +2483,7 @@ MonoBehaviour:
   comboResetTime: 2
   damageBonusPerCombo: 0.01
   maxDamageMultiplier: 1.5
-  maxDamage: 100
+  maxDamage: 30
   baseScorePerHit: 100
   comboText: {fileID: 422737200}
   comboTimerText: {fileID: 0}
@@ -4327,6 +4331,7 @@ MonoBehaviour:
   beamPositionMoveDuration: 0.1
   beamAngleOffset: 0
   beamSpawnOffset: {x: 0, y: 0}
+  beamOrderInLayer: 20
   beamEndSprites:
   - {fileID: 21300000, guid: 4bf67fb883b02441083f049603912a83, type: 3}
   - {fileID: 21300000, guid: 19a15af9e37af443e97e3cee3c270af4, type: 3}
